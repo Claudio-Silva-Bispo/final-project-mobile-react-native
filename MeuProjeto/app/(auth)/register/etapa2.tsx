@@ -107,8 +107,7 @@ export default function Etapa2() {
 
       {/* Botão continuar */}
       <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/cadastro/etapa3')}>
-        <Text style={styles.buttonText}>Continuar</Text>
-        <Ionicons name="chevron-forward" size={20} color="#fff" />
+        <Text style={styles.buttonText}>Continuar ›››</Text>
       </TouchableOpacity>
 
       {/* Indicador de progresso */}
@@ -124,10 +123,14 @@ export default function Etapa2() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, flex: 1, backgroundColor: '#fff' },
+  container: { 
+    padding: 20, 
+    flex: 1, 
+    backgroundColor: '#fff' 
+  },
   backButton: { 
     marginBottom: 10,
-    paddingTop: 20 
+    paddingTop: 40 
   },
   logo: { 
     width: 250, 
@@ -164,7 +167,7 @@ const styles = StyleSheet.create({
   },
   button: {
     flexDirection: 'row',
-    backgroundColor: '#0057FF',
+    backgroundColor: '#007aff',
     padding: 14,
     borderRadius: 12,
     justifyContent: 'center',

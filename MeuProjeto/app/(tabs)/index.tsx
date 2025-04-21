@@ -63,7 +63,9 @@ export default function HomeScreen() {
         ))}
       </View>
 
-      <TouchableOpacity style={styles.loginButton}>
+      <TouchableOpacity 
+        style={styles.loginButton}
+        onPress={() => router.push('/(auth)/login/login')}>
         <Text style={styles.loginText}>ENTRAR</Text>
       </TouchableOpacity>
 
@@ -150,6 +152,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     marginTop: 24,
     fontSize: 14,
+    paddingBottom: 20,
   },
   firstAccessButton: {
     borderColor: '#fff',

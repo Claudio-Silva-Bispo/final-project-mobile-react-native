@@ -29,7 +29,8 @@ export default function Etapa3() {
       </TouchableOpacity>
       
       {/* Logo */}
-          <Image source={require('@/assets/images/logo/logo.png')} style={styles.logo} resizeMode="contain" />
+      <Image source={require('@/assets/images/logo/logo.png')} style={styles.logo} resizeMode="contain" />
+      
       <Text style={styles.title}>
 
         Agora informe o seu <Text style={styles.bold}>endereço de preferência</Text>
@@ -110,7 +111,7 @@ export default function Etapa3() {
 
       {/* Botão continuar */}
             <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/cadastro/etapa4')}>
-              <Text style={styles.buttonText}>Continuar</Text>
+              <Text style={styles.buttonText}>Continuar ›››</Text>
               {/*<Ionicons name="chevron-forward" size={20} color="#fff" />*/}
             </TouchableOpacity>
       
@@ -134,7 +135,7 @@ const styles = StyleSheet.create({
   },
   backButton: { 
     marginBottom: 10,
-    paddingTop: 20 
+    paddingTop: 40 
   },
   logo: { 
     width: 250, 
