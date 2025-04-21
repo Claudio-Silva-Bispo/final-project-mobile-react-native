@@ -10,11 +10,52 @@ import {
   Image,
   SafeAreaView,
   Pressable,
+  Alert,
 } from 'react-native';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth, db } from "../../../firebaseConfig"; // Instalar npm install firebase
+import { doc, getDoc } from "firebase/firestore";
 
 const LoginScreen = () => {
 
     const [saveData, setSaveData] = useState(false);
+    const [email, setEmail] = useState("");
+    const [senha, setSenha] = useState("");
+
+    const handleLogin = async () => {
+      try {
+        console.log("🔹 Tentando fazer login...");
+  
+        const userCredential = await signInWithEmailAndPassword(auth, email, senha); 
+        const user = userCredential.user;
+  
+        const userDocRef = doc(db, "t_usuarios", user.uid);
+        const userDoc = await getDoc(userDocRef);
+  
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const perfil = userData?.perfil;
+  
+          if (perfil === "comum") {
+            console.log("✅ Login bem-sucedido!");
+            Alert.alert("Sucesso", "Login realizado com sucesso!");
+  
+            // Navega para a Sessão Restrita de clientes
+            router.push("/(auth)/main/inicio");
+          } else {
+            console.error("❌ Perfil inválido");
+            Alert.alert("Erro", "Você não tem permissão para acessar esta área.");
+          }
+        } else {
+          console.error("❌ Usuário não encontrado no Firestore");
+          Alert.alert("Erro", "Usuário não encontrado.");
+        }
+  
+      } catch (error: any) {
+        console.error("❌ Erro ao fazer login:", error.message);
+        Alert.alert("Erro", "Email ou senha incorretos.");
+      }
+    };
 
     const handleForgotPassword = () => {
         router.push('/(auth)/login/redefinir-senha');
@@ -22,7 +63,7 @@ const LoginScreen = () => {
 
     const handleAccess = () => {
       router.push('/(auth)/main/inicio');
-  };
+    };
     
     return (
         <SafeAreaView style={styles.container}>
@@ -42,9 +83,8 @@ const LoginScreen = () => {
         <View style={styles.inputContainer}>
             <TextInput
             style={styles.input}
-            placeholder="CPF ou Carteirinha"
+            placeholder="Email, CPF ou Carteirinha"
             placeholderTextColor="#555"
-            keyboardType="numeric"
             />
 
             <TextInput
@@ -77,7 +117,7 @@ const LoginScreen = () => {
 
         {/* Botão de login */}
         <TouchableOpacity style={styles.loginButton}>
-            <Text style={styles.loginButtonText} onPress={handleAccess}>ACESSAR</Text>
+            <Text style={styles.loginButtonText} onPress={handleLogin}>ACESSAR</Text>
         </TouchableOpacity>
 
         {/* Seção com imagem de fundo no card */}

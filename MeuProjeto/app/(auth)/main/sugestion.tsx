@@ -28,6 +28,7 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
   image,
   isPast = false,
 }) => {
+
   return (
     <View style={[styles.consultaCard, isPast ? styles.pastConsultaCard : styles.nextConsultaCard]}>
       <View style={styles.cardContent}>
@@ -55,6 +56,15 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
 };
 
 export default function MinhasConsultas() {
+  
+  const handleRefused = () => {
+    router.push('/(auth)/appointments/refused');
+  };
+
+  const handleReschedule = () => {
+      router.push('/(auth)/appointments/reschedule');
+    };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -86,10 +96,10 @@ export default function MinhasConsultas() {
           </TouchableOpacity>
 
           <View style={styles.secondaryButtonsContainer}>
-            <TouchableOpacity style={styles.rescheduleButton}>
+            <TouchableOpacity style={styles.rescheduleButton} onPress={handleReschedule}>
               <Text style={styles.secondaryButtonText}>REAGENDAR</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.declineButton}>
+            <TouchableOpacity style={styles.declineButton} onPress={handleRefused}>
               <Text style={styles.secondaryButtonText}>RECUSAR</Text>
             </TouchableOpacity>
           </View>
