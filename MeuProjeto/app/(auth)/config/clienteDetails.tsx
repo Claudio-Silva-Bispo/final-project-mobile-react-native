@@ -63,11 +63,11 @@ const ClientDetails: React.FC<{ navigation: any }> = () => {
   useEffect(() => {
     const buscarDados = async () => {
       try {
-        const dadosCadastraisRef = doc(db, "t_dados_pessoais_clientes", user.uid);
-        const enderecoResidenciaRef = doc(db, "t_endereco_residencia_cliente", user.uid);
-        const enderecoConsultaRef = doc(db, "t_endereco_preferencia_cliente", user.uid);
-        const diasPreferenciaRef = doc(db, "t_dia_preferencia_cliente", user.uid);
-        const turnoPreferenciaRef = doc(db, "t_turno_preferencia_cliente", user.uid);
+        const dadosCadastraisRef = doc(db, "t_usuario", user.uid);
+        const enderecoResidenciaRef = doc(db, "t_endereco_residencia_usuario", user.uid);
+        const enderecoConsultaRef = doc(db, "t_endereco_preferencia_usuario", user.uid);
+        const diasPreferenciaRef = doc(db, "t_dia_preferencia_usuario", user.uid);
+        const turnoPreferenciaRef = doc(db, "t_turno_preferencia__usuario", user.uid);
   
         const dadosCadastraisSnap = await getDoc(dadosCadastraisRef);
         const enderecoResidenciaSnap = await getDoc(enderecoResidenciaRef);
@@ -142,6 +142,7 @@ const ClientDetails: React.FC<{ navigation: any }> = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Meus Dados</Text>
+      <Text style={styles.title}>ID: {dados.idCliente}</Text>
 
       {loading ? (
         <Text>Carregando...</Text>
@@ -151,13 +152,12 @@ const ClientDetails: React.FC<{ navigation: any }> = () => {
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Dados pessoais</Text>
               <TextInput style={styles.input} placeholder="Nome" value={dados.nome || ""} onChangeText={(text) => setDados({ ...dados, nome: text })} />
-              <TextInput style={styles.input} placeholder="Sobrenome" value={dados.sobrenome || ""} onChangeText={(text) => setDados({ ...dados, sobrenome: text })} />
               <TextInput style={styles.input} placeholder="CPF" value={dados.cpf || ""} onChangeText={(text) => setDados({ ...dados, cpf: text })}/>
               <TextInput style={styles.input} placeholder="Data de Nascimento" value={dados.dataNascimento || ""} onChangeText={(text) => setDados({ ...dados, dataNascimento: text })} />
-              <TextInput style={styles.input} placeholder="Idade" keyboardType="numeric" value={dados.idade || ""} onChangeText={(text) => setDados({ ...dados, idade: text })} />
-              <TextInput style={styles.input} placeholder="Altura (m)" keyboardType="decimal-pad" value={dados.altura || ""} onChangeText={(text) => setDados({ ...dados, altura: text })} />
+              <TextInput style={styles.input} placeholder="Telefone" keyboardType="numeric" value={dados.telefone || ""} onChangeText={(text) => setDados({ ...dados, telefone: text })} />
+              <TextInput style={styles.input} placeholder="Genero"  value={dados.genero || ""} onChangeText={(text) => setDados({ ...dados, altura: text })} />
 
-              <CustomButton title="Atualizar" textColor="#fff" onPress={() => atualizarDados("t_dados_pessoais_clientes", dados)} width={'100%'}/>
+              <CustomButton title="Atualizar" textColor="#fff" onPress={() => atualizarDados("t_usuario", dados)} width={'100%'}/>
               
               <TouchableOpacity onPress={() => setStep(2)} style={styles.nextButton}>
                 <Text style={styles.buttonText}>→ Próximo</Text>

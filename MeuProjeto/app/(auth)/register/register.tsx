@@ -2,24 +2,42 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, StyleSheet, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import {  db } from '@/firebaseConfig';
+import { query, where, getDocs, collection } from 'firebase/firestore';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [cpf, setCpf] = useState('');
+  const [data, setData] = useState('');
 
-  const handleCadastro = () => {
-    if (!cpf) {
-      Alert.alert('Atenção', 'Por favor, preencha o CPF ou número da carteirinha.');
+  const handleCadastro = async () => {
+    if (!data) {
+      Alert.alert('Atenção', 'Por favor, preencha o Email, CPF ou número da carteirinha.');
       return;
     }
-
-    // Redireciona para a etapa 1 do cadastro, passando o CPF como parâmetro
-    router.push({
-      pathname: '/(auth)/register/etapa1',
-      params: { cpf },
-    });
+  
+    console.log("🔹 Verificando e-mail existente...");
+    try {
+      const usuariosRef = collection(db, "t_usuario");
+      const q = query(usuariosRef, where("email", "==", data));
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        Alert.alert("Atenção", "Este e-mail já está cadastrado. Use outro e-mail ou faça login.");
+        return;
+      }
+  
+      // Redireciona para a etapa 1 do cadastro, passando o email como parâmetro
+      router.push({
+        pathname: '/(auth)/register/etapa1',
+        params: { data },
+      });
+  
+    } catch (error) {
+      console.error("Erro ao verificar e-mail:", error);
+      Alert.alert("Erro", "Não foi possível verificar o e-mail. Tente novamente.");
+    }
   };
-
+  
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -32,10 +50,10 @@ export default function RegisterScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="CPF ou Carteirinha"
+        placeholder="Email"
         placeholderTextColor="#999"
-        value={cpf}
-        onChangeText={setCpf}
+        value={data}
+        onChangeText={setData}
       />
 
       <TouchableOpacity style={styles.registerButton} onPress={handleCadastro}>

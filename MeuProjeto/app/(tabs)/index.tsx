@@ -73,7 +73,7 @@ export default function HomeScreen() {
 
       <TouchableOpacity 
         style={styles.firstAccessButton}
-        onPress={() => router.push('/(auth)/register/etapa1')}>
+        onPress={() => router.push('/(auth)/register/register')}>
         <Text style={styles.firstAccessText}>PRIMEIRO ACESSO</Text>
       </TouchableOpacity>
     </View>

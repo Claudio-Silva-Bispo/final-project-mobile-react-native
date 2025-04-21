@@ -1,13 +1,11 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { router } from 'expo-router';
 
 export default function CadastroFinalizadoScreen() {
-  const navigation = useNavigation();
 
   const handleProsseguir = () => {
-    router.push('/'); 
+    router.push('/login/login'); 
   };
 
   return (

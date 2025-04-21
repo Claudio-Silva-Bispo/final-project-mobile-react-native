@@ -1,16 +1,65 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
+  Alert,
 } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
+import {  db } from '@/firebaseConfig';
+import { query, where, getDocs } from 'firebase/firestore';
 
 export default function Etapa1() {
   const router = useRouter();
-  const { cpf } = useLocalSearchParams();
+  const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [cpf, setCPF] = useState('');
+  const { data } = useLocalSearchParams();
   const [genero, setGenero] = useState('Feminino'); 
+  const [dataNasc, setDataNasc] = useState('');
+  const [senha, setSenha] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
 
+  
+  const handleRegister = async () => {
+    console.log("🔹 Verificando e-mail existente...");
+    try {
+      const usuariosRef = collection(db, "t_usuario");
+      const q = query(usuariosRef, where("email", "==", data));
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        Alert.alert("Atenção", "Este e-mail já está cadastrado. Use outro e-mail ou faça login.");
+        return;
+      }
+  
+      console.log("🔹 E-mail não encontrado. Salvando novo cadastro...");
+      const docRef = await addDoc(usuariosRef, {
+        nome: name,
+        telefone: phone,
+        cpf: cpf,
+        email: data,
+        genero: genero,
+        dataNascimento: dataNasc,
+        criadoEm: new Date().toISOString()
+      });
+  
+      console.log("✅ Dados salvos com sucesso! ID do cliente:", docRef.id);
+      Alert.alert("Sucesso", "Dados salvos com sucesso!");
+  
+      router.push({
+        pathname: "/register/etapa2",
+        params: { idCliente: docRef.id }
+      });
+  
+    } catch (error) {
+      console.error("❌ Erro ao salvar dados:", error);
+      Alert.alert("Erro", "Não foi possível salvar os dados.");
+    }
+  };
+  
   return (
+
     <View style={styles.container}>
       {/* Voltar */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
@@ -27,19 +76,22 @@ export default function Etapa1() {
 
       {/* Nome */}
       <Text style={styles.label}>Nome Completo</Text>
-      <TextInput style={styles.input} placeholder="Ex. João da Silva" placeholderTextColor="#999" />
+      <TextInput style={styles.input} placeholder="Ex. João da Silva" placeholderTextColor="#999" value={name} onChangeText={setName}
+      autoComplete="name"/>
 
       {/* Telefone */}
       <Text style={styles.label}>Telefone</Text>
-      <TextInput style={styles.input} placeholder="Ex: (11)99999-9999" placeholderTextColor="#999" />
+      <TextInput style={styles.input} placeholder="Ex: (11)99999-9999" placeholderTextColor="#999" value={phone} onChangeText={setPhone}
+      autoComplete="tel"/>
 
       {/* E-mail */}
       <Text style={styles.label}>E-mail</Text>
-      <TextInput style={styles.input} placeholder="Ex: joao@dominio.com.br" placeholderTextColor="#999" />
+      <TextInput style={styles.input} placeholder="Ex: joao@dominio.com.br" placeholderTextColor="#999" value={data?.toString()}/>
 
       {/* CPF */}
       <Text style={styles.label}>CPF</Text>
-      <TextInput style={styles.input} placeholder="Ex: 999.999.999-99" placeholderTextColor="#999" value={cpf?.toString()} />
+      <TextInput style={styles.input} placeholder="Ex: 999.999.999-99" placeholderTextColor="#999" value={cpf} onChangeText={setCPF}
+      autoComplete="off"/>
 
       {/* Gênero */}
       <Text style={styles.label}>Gênero</Text>
@@ -59,10 +111,11 @@ export default function Etapa1() {
 
       {/* Data de Nascimento */}
       <Text style={styles.label}>Data de Nascimento</Text>
-      <TextInput style={styles.input} placeholder="Ex: 01/01/1990" placeholderTextColor="#999" />
+      <TextInput style={styles.input} placeholder="Ex: 01/01/1990" placeholderTextColor="#999" value={dataNasc} onChangeText={setDataNasc}
+      autoComplete="off"/>
 
       {/* Botão continuar */}
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/register/etapa2')}>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}> {/*onPress={() => router.push('/(auth)/register/etapa2')}>*/}
         <Text style={styles.buttonText}>Continuar ›››</Text>
       </TouchableOpacity>
 

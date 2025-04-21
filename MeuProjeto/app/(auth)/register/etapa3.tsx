@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Pressable,Image } from 'react-native';
-import { useRouter } from 'expo-router';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Pressable,Image, Alert } from 'react-native';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 
 export default function Etapa3() {
   const router = useRouter();
-
-  const [usarMesmoEndereco, setUsarMesmoEndereco] = useState(false);
+  
   const [cep, setCep] = useState('');
   const [numero, setNumero] = useState('');
   const [rua, setRua] = useState('');
@@ -15,10 +16,36 @@ export default function Etapa3() {
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
 
-  const handleConfirmar = () => {
-    console.log({ usarMesmoEndereco, cep, numero, rua, bairro, complemento, cidade, estado });
-    router.push('/(auth)/register/etapa4');
-  };
+  const { idCliente } = useLocalSearchParams() || { idCliente: 'default-id' };
+
+  const handleRegister = async () => {
+        console.log("🔹 Salvando dados da Etapa 3...");
+        try {
+          const docRef = await addDoc(collection(db, "t_endereco_preferencia_usuario"), {
+            idCliente: idCliente,
+            cep: cep,
+            estado: estado,
+            cidade: cidade,
+            bairro: bairro,
+            rua: rua,
+            numero: numero,
+            complemento: complemento,
+            criadoEm: new Date().toISOString()
+          });
+      
+          console.log("✅ Dados salvos com sucesso! ID do cliente:", docRef.id);
+          Alert.alert("Sucesso", "Dados salvos com sucesso!");
+      
+          // Leva o ID gerado para a próxima etapa
+          router.push({
+            pathname: "/register/etapa4",
+            params: { idCliente: idCliente }
+          });
+        } catch (error) {
+          console.error("❌ Erro ao salvar dados:", error);
+          Alert.alert("Erro", "Não foi possível salvar os dados.");
+        }
+      };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -110,19 +137,19 @@ export default function Etapa3() {
       </View>
 
       {/* Botão continuar */}
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/register/etapa4')}>
-              <Text style={styles.buttonText}>Continuar ›››</Text>
-              {/*<Ionicons name="chevron-forward" size={20} color="#fff" />*/}
-            </TouchableOpacity>
-      
-            {/* Indicador de progresso */}
-            <View style={styles.dotsContainer}>
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-              <View style={[styles.dot, styles.dotActive]} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-            </View>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}> {/*} onPress={() => router.push('/(auth)/register/etapa4')}>*/}
+        <Text style={styles.buttonText}>Continuar ›››</Text>
+        {/*<Ionicons name="chevron-forward" size={20} color="#fff" />*/}
+      </TouchableOpacity>
+
+      {/* Indicador de progresso */}
+      <View style={styles.dotsContainer}>
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+          <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.dot} />
+          <View style={styles.dot} />
+      </View>
     </ScrollView>
   );
 }

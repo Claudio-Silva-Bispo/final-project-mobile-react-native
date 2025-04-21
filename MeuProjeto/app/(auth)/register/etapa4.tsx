@@ -1,11 +1,29 @@
+import { db } from '@/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
+import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { query, where, getDocs } from 'firebase/firestore';
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebaseConfig"; 
 
 export default function SenhaScreen() {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
+  const { idCliente } = useLocalSearchParams() || { idCliente: 'default-id' };
+
+  // Coletar o email que foi salvo no banco para criar a atutenticação
+  const buscarEmailPorId = async (idCliente: string) => {
+    const ref = doc(db, "t_usuario", idCliente);
+    const snapshot = await getDoc(ref);
+  
+    if (snapshot.exists()) {
+      return snapshot.data().email;
+    } else {
+      throw new Error("Email não encontrado para o ID informado.");
+    }
+  };
 
   const validarSenha = (senha: string) => {
     const regex =
@@ -13,19 +31,44 @@ export default function SenhaScreen() {
     return regex.test(senha);
   };
 
-  const handleContinuar = () => {
-    if (senha !== confirmarSenha) {
-      Alert.alert('Erro', 'As senhas não coincidem.');
-      return;
-    }
-  
+  const handleRegister = async () => {
     if (!validarSenha(senha)) {
-      Alert.alert('Erro', 'A senha não atende aos requisitos.');
+      Alert.alert("Erro", "A senha não atende aos critérios de segurança.");
       return;
     }
   
-    // Rota da próxima etapa (etapa 5)
-    router.push('/register/etapa5'); 
+    if (senha !== confirmarSenha) {
+      Alert.alert("Erro", "As senhas não coincidem.");
+      return;
+    }
+  
+    try {
+      console.log("🔍 Buscando e-mail...");
+      const email = await buscarEmailPorId(Array.isArray(idCliente) ? idCliente[0] : idCliente);
+  
+      console.log("🔐 Criando usuário no Firebase Auth...");
+      const userCredential = await createUserWithEmailAndPassword(auth, email, senha);
+      const uid = userCredential.user.uid;
+  
+      console.log("💾 Salvando dados da Etapa 4...");
+      await addDoc(collection(db, "t_seguranca_usuario"), {
+        idCliente,
+        email: email,
+        senha: senha,
+        idAutenticacao: uid,
+        criadoEm: new Date().toISOString()
+      });
+  
+      //Alert.alert("Sucesso", "Conta criada com sucesso!");
+  
+      router.push({
+        pathname: "/register/etapa5",
+        params: { idCliente }
+      });
+    } catch (error: any) {
+      console.error("❌ Erro ao registrar:", error);
+      Alert.alert("Erro", error.message || "Ocorreu um erro.");
+    }
   };
 
   return (
@@ -67,7 +110,7 @@ export default function SenhaScreen() {
         <Text style={styles.req}>• Pelo menos um caractere especial (!@#$%^&*)</Text>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleContinuar}>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Continuar   ›››</Text>
       </TouchableOpacity>
 

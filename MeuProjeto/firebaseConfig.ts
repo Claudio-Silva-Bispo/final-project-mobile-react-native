@@ -1,7 +1,6 @@
-import { FirebaseApp, initializeApp } from "firebase/app"; // Instalar npm install firebase
+import { initializeApp } from "firebase/app"; // Instalar npm install firebase
 import { getFirestore } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
-import ReactNativeAsyncStorage from "@react-native-async-storage/async-storage"; // Instalar npm install @react-native-async-storage/async-storage
 
 
 const firebaseConfig = {

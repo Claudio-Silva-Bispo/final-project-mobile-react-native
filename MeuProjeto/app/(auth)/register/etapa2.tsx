@@ -1,20 +1,55 @@
 import React, { useState } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
+  Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { addDoc, collection } from 'firebase/firestore';
+import { db } from '@/firebaseConfig';
 
 export default function Etapa2() {
   const router = useRouter();
 
   const [cep, setCep] = useState('');
-  const [numero, setNumero] = useState('');
-  const [rua, setRua] = useState('');
-  const [bairro, setBairro] = useState('');
-  const [complemento, setComplemento] = useState('');
-  const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
+  const [cidade, setCidade] = useState('');
+  const [bairro, setBairro] = useState('');
+  const [rua, setRua] = useState('');
+  const [numero, setNumero] = useState('');
+  const [complemento, setComplemento] = useState('');
+  
+ 
+  const { idCliente } = useLocalSearchParams() || { idCliente: 'default-id' };
+
+  const handleRegister = async () => {
+      console.log("🔹 Salvando dados da Etapa 2...");
+      try {
+        const docRef = await addDoc(collection(db, "t_endereco_residencia_usuario"), {
+          idCliente: idCliente,
+          cep: cep,
+          estado: estado,
+          cidade: cidade,
+          bairro: bairro,
+          rua: rua,
+          numero: numero,
+          complemento: complemento,
+          criadoEm: new Date().toISOString()
+        });
+    
+        console.log("✅ Dados salvos com sucesso! ID do cliente:", docRef.id);
+        Alert.alert("Sucesso", "Dados salvos com sucesso!");
+    
+        // Leva o ID gerado para a próxima etapa
+        router.push({
+          pathname: "/register/etapa3",
+          params: { idCliente: idCliente }
+        });
+      } catch (error) {
+        console.error("❌ Erro ao salvar dados:", error);
+        Alert.alert("Erro", "Não foi possível salvar os dados.");
+      }
+    };
 
   return (
     <View style={styles.container}>
@@ -41,6 +76,7 @@ export default function Etapa2() {
             placeholderTextColor="#999"
             value={cep}
             onChangeText={setCep}
+            autoComplete='postal-code'
           />
         </View>
 
@@ -61,12 +97,14 @@ export default function Etapa2() {
         style={styles.input}
         value={rua}
         onChangeText={setRua}
+        autoComplete='street-address'
+        placeholder="Ex: Rua das Flores"
       />
 
       <Text style={styles.label}>Bairro</Text>
       <TextInput
         style={styles.input}
-        placeholder="Enter your value"
+        placeholder="Exemplo: Centro"
         placeholderTextColor="#999"
         value={bairro}
         onChangeText={setBairro}
@@ -106,7 +144,7 @@ export default function Etapa2() {
       </View>
 
       {/* Botão continuar */}
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/register/etapa3')}>
+      <TouchableOpacity style={styles.button} onPress={handleRegister}> {/*onPress={() => router.push('/(auth)/register/etapa3')}>*/}
         <Text style={styles.buttonText}>Continuar ›››</Text>
       </TouchableOpacity>
 
