@@ -15,7 +15,7 @@ export default function RegisterScreen() {
 
     // Redireciona para a etapa 1 do cadastro, passando o CPF como parâmetro
     router.push({
-      pathname: '/(auth)/cadastro/etapa1',
+      pathname: '/(auth)/register/etapa1',
       params: { cpf },
     });
   };

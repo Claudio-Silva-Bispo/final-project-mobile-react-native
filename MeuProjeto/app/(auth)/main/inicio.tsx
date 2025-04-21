@@ -1,93 +1,90 @@
 import React from 'react';
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
 
 const InicioScreen = () => {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#0066FF', dark: '#003EA6' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/logo/logo-branco.png')}
-          style={styles.headerImage}
-        />
-      }>
-
-        {/** 🔔 Cabeçalho com sininho, logo no centro e foto da pessoa logada */}
+    <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={styles.headerImage}>
         <View style={styles.headerContent}>
-          <Ionicons name="notifications-outline" size={28} color="#003EA6" />
+          <Ionicons name="notifications-outline" size={32} color="#fff" />
           <Image source={require('@/assets/images/logo/logo-branco.png')} style={styles.logo} />
-          <Image
-            source={require('@/assets/images/main/imagem-dois.png')}
-            style={styles.avatar}
-          />
+          <Image source={require('@/assets/images/main/imagem-dois.png')} style={styles.avatar} />
         </View>
+      </View>
 
-        {/** 📅 Próximo Agendamento com ícone de calendário + linha separadora + pontos */}
+      <View style={styles.container}>
+        {/* Próximo Agendamento */}
         <View style={styles.appointment}>
-          <View><Ionicons name="calendar-outline" size={20} color="#003EA6" style={{ marginRight: 8 }} /></View>
-          <View style={styles.appointmentHeader}>
+          <Ionicons name="calendar-outline" size={32} color="#003EA6" />
+          <View style={styles.divider} />
+          <View style={styles.appointmentDetails}>
             <Text style={styles.appointmentText}>Próximo Agendamento</Text>
             <Text style={styles.appointmentDate}>02/10/2024 às 14:20</Text>
           </View>
-
           <View style={styles.divider} />
-
-          <View style={styles.appointmentContent}>
-            
-            <Text style={styles.points}>Você tem 184 Pontos</Text>
+          <View style={styles.pointsContainer}>
+            <Text style={styles.points}>Você tem</Text>
+            <Text style={styles.textAppointment}>184</Text>
+            <Text style={styles.points}>Pontos</Text>
           </View>
         </View>
 
-        {/** 💡 Card com dica e imagem */}
+        {/* OdontoDica */}
         <View style={styles.tipSection}>
-          <Image source={require('@/assets/images/main/imagem-um.png')} style={styles.tipImage} />
           <Text style={styles.tipTitle}>#OdontoDica</Text>
+          <Image source={require('@/assets/images/main/imagem-um.png')} style={styles.tipImage} />
           <Text style={styles.tipText}>
             Dente do siso{'\n'}
             Todo mundo precisa fazer a extração? Confira a dica da Dra. Letícia Almeida.{'\n\n'}
-            <Text style={{ color: '#003EA6', fontWeight: 'bold' }}>Saiba mais</Text>
+            <Text style={styles.linkText}>Saiba mais</Text>
           </Text>
         </View>
 
-        {/** 🎁 Card de pontos e recompensas */}
-        <View style={styles.pointsSection}>
-          <Text style={styles.pointsTitle}>Acompanhe sua pontuação e ganhe recompensas!</Text>
-          <Text style={styles.pointsText}>
-            Cada consulta ou indicação conta pontos que você pode trocar por benefícios exclusivos.{'\n\n'}
-            Mantenha seu sorriso em dia e acumule muitas vantagens!
-          </Text>
+        {/* Pontuação */}
+        <View style={styles.card}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.cardTitle}>Acompanhe sua pontuação e ganhe recompensas!</Text>
+            <Text style={styles.cardText}>
+              Cada consulta ou indicação conta pontos que você pode trocar por benefícios exclusivos. Mantenha seu sorriso em dia e acumule vantagens!
+            </Text>
+            <TouchableOpacity style={styles.planButton}>
+              <Text style={styles.planButtonText}>Confira seus pontos</Text>
+            </TouchableOpacity>
+          </View>
+          <Image
+            source={require('@/assets/images/main/imagem-tres.png')}
+            style={styles.cardImage}
+            resizeMode="cover"
+          />
         </View>
-
-    </ParallaxScrollView>
-    );
+      </View>
+    </View>
+  );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 60,
-    paddingHorizontal: 0,
+    paddingHorizontal: 16,
+    paddingTop: 16,
     backgroundColor: '#fff',
   },
   headerImage: {
-    width: 180,
-    height: 60,
-    resizeMode: 'contain',
-    marginTop: 60,
-    alignSelf: 'center',
+    height: 180,
+    backgroundColor: '#003EA6',
+    justifyContent: 'flex-end',
+    paddingHorizontal: 16,
+    paddingBottom: 10,
   },
   headerContent: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    marginTop: 20,
     alignItems: 'center',
   },
   logo: {
-    width: 120,
-    height: 40,
+    width: 200,
+    height: 100,
     resizeMode: 'contain',
   },
   avatar: {
@@ -96,74 +93,104 @@ const styles = StyleSheet.create({
     borderRadius: 18,
   },
   appointment: {
-    marginTop: 30,
-    marginBottom: 20,
-    backgroundColor: '#f9f9f9',
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f6ff',
     borderRadius: 12,
     padding: 16,
+    marginBottom: 10,
+    justifyContent: 'space-between',
   },
-  appointmentHeader: {
-    flexDirection: 'row',
+  appointmentDetails: {
+    flex: 1,
     alignItems: 'center',
   },
   appointmentText: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#003EA6',
   },
-  divider: {
-    height: 2,
-    backgroundColor: '#003EA6',
-    marginVertical: 10,
-    width: '100%',
-  },
-  appointmentContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
   appointmentDate: {
-    fontSize: 16,
+    fontSize: 12,
     color: '#333',
+    marginTop: 4,
+  },
+  divider: {
+    width: 1,
+    height: '70%',
+    backgroundColor: '#007bff',
+    marginHorizontal: 8,
+  },
+  pointsContainer: {
+    alignItems: 'center',
+  },
+  textAppointment: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#000',
   },
   points: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: 'bold',
     color: '#003EA6',
   },
   tipSection: {
     marginBottom: 20,
   },
-  tipImage: {
-    width: '100%',
-    height: 150,
-    borderRadius: 10,
-  },
   tipTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginTop: 10,
-    color: '#003EA6',
-  },
-  tipText: {
-    fontSize: 16,
-    color: '#555',
-    marginTop: 6,
-  },
-  pointsSection: {
-    marginBottom: 30,
-    backgroundColor: '#f2f8ff',
-    borderRadius: 12,
-    padding: 16,
-  },
-  pointsTitle: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#003EA6',
     marginBottom: 8,
   },
-  pointsText: {
-    fontSize: 16,
-    color: '#555',
+  tipImage: {
+    width: '100%',
+    height: 150,
+    borderRadius: 12,
+  },
+  tipText: {
+    fontSize: 14,
+    color: '#444',
+    marginTop: 5,
+  },
+  linkText: {
+    color: '#003EA6',
+    fontWeight: 'bold',
+  },
+  card: {
+    flexDirection: 'row',
+    backgroundColor: '#f2f8ff',
+    borderRadius: 12,
+    padding: 12,
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#003399',
+    marginBottom: 6,
+  },
+  cardText: {
+    fontSize: 10,
+    color: '#003EA6',
+    marginBottom: 12,
+  },
+  planButton: {
+    backgroundColor: '#0057FF',
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    alignSelf: 'flex-start',
+  },
+  planButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+  cardImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 10,
+    marginLeft: 16,
   },
 });
 
