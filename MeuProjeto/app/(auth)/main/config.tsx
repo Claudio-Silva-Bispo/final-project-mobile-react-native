@@ -215,7 +215,7 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<DentalIcon />} 
           title="Rotina de Cuidados"
-          onPress={() => console.log('Rotina de Cuidados')}
+          onPress={() => router.push('/(auth)/config/careRoutine')}
         />
 
         <ConfigMenuItem 
@@ -257,7 +257,7 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<LogoutIcon />} 
           title="Sair"
-          onPress={() => console.log('Sair')}
+          onPress={() => router.push('/main/inicio')}
         />
       </ScrollView>
     </SafeAreaView>

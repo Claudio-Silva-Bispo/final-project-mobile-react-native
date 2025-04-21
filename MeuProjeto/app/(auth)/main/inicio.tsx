@@ -8,9 +8,11 @@ const InicioScreen = () => {
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.headerImage}>
         <View style={styles.headerContent}>
-          <Ionicons name="notifications-outline" size={32} color="#fff" />
+          <Ionicons name="notifications-outline" size={32} color="#fff" onPress={() => router.push('/(auth)/config/notification')}/>
           <Image source={require('@/assets/images/logo/logo-branco.png')} style={styles.logo} />
-          <Image source={require('@/assets/images/main/imagem-dois.png')} style={styles.avatar} />
+          <TouchableOpacity onPress={() => router.push('/(auth)/config/clienteDetails')}>
+            <Image source={require('@/assets/images/main/imagem-dois.png')} style={styles.avatar} />
+          </TouchableOpacity>
         </View>
       </View>
 
