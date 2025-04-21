@@ -62,7 +62,7 @@ export default function Etapa1() {
       <TextInput style={styles.input} placeholder="Ex: 01/01/1990" placeholderTextColor="#999" />
 
       {/* Botão continuar */}
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/cadastro/etapa2')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/register/etapa2')}>
         <Text style={styles.buttonText}>Continuar ›››</Text>
       </TouchableOpacity>
 

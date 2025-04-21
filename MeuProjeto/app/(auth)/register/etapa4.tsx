@@ -25,7 +25,7 @@ export default function SenhaScreen() {
     }
   
     // Rota da próxima etapa (etapa 5)
-    router.push('/cadastro/etapa5'); 
+    router.push('/register/etapa5'); 
   };
 
   return (

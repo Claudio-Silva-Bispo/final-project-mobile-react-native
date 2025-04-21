@@ -106,7 +106,7 @@ export default function Etapa2() {
       </View>
 
       {/* Botão continuar */}
-      <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/cadastro/etapa3')}>
+      <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/register/etapa3')}>
         <Text style={styles.buttonText}>Continuar ›››</Text>
       </TouchableOpacity>
 

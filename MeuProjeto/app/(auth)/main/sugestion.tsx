@@ -1,109 +1,294 @@
-import { StyleSheet, Image, Platform } from 'react-native';
-
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 import { IconSymbol } from '@/components/ui/IconSymbol';
+import React from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  SafeAreaView,
+} from 'react-native';
+import { router } from 'expo-router';
 
-export default function SugestionScreen() {
+type ConsultaCardProps = {
+  doctor: string;
+  specialty: string;
+  time: string;
+  date: string;
+  image: any;
+  isPast?: boolean;
+};
+
+const ConsultaCard: React.FC<ConsultaCardProps> = ({
+  doctor,
+  specialty,
+  time,
+  date,
+  image,
+  isPast = false,
+}) => {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Sugestão de Consultas</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={[styles.consultaCard, isPast ? styles.pastConsultaCard : styles.nextConsultaCard]}>
+      <View style={styles.cardContent}>
+        <Image source={image} style={styles.doctorImage} />
+        
+        <View style={styles.doctorDetails}>
+          <Text style={styles.doctorName}>{doctor}</Text>
+          <Text style={styles.examType}>{specialty}</Text>
+          <View style={styles.dateTimeRow}>
+            <Text style={styles.timeText}>{time}</Text>
+            <Text style={styles.dateText}>{date}</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity style={styles.optionsButton}>
+          <View style={styles.dotsContainer}>
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+          </View>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
+};
+
+export default function MinhasConsultas() {
+  return (
+    <SafeAreaView style={styles.container}>
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        {/* Header */}
+        <View style={styles.header}>
+          <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+            <View style={styles.backButtonCircle}>
+              <Text style={styles.backButtonIcon}>←</Text>
+            </View>
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Minhas Consultas</Text>
+          <TouchableOpacity style={styles.calendarButton}>
+            <IconSymbol size={38} name="calendar" color={'#0066FF'} />
+          </TouchableOpacity>
+        </View>
+
+        {/* Próxima Consulta */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Próxima Consulta</Text>
+          <ConsultaCard
+            doctor="Dr. Carlos Almendra"
+            specialty="Exame de Oclusão"
+            time="14:20"
+            date="02/10/2024"
+            image={require('@/assets/images/sugestion/imagem-um.png')}
+          />
+          <TouchableOpacity style={styles.acceptButton}>
+            <Text style={styles.acceptButtonText}>ACEITAR</Text>
+          </TouchableOpacity>
+
+          <View style={styles.secondaryButtonsContainer}>
+            <TouchableOpacity style={styles.rescheduleButton}>
+              <Text style={styles.secondaryButtonText}>REAGENDAR</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.declineButton}>
+              <Text style={styles.secondaryButtonText}>RECUSAR</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Consultas Anteriores */}
+        <View style={styles.sectionContainer}>
+          <Text style={styles.sectionTitle}>Consultas Anteriores</Text>
+          <ConsultaCard
+            doctor="Dra. Viviane Almeida"
+            specialty="Exame Periodontal"
+            time="16:50"
+            date="14/06/2024"
+            image={require('@/assets/images/sugestion/imagem-dois.png')}
+            isPast
+          />
+          <ConsultaCard
+            doctor="Dra. Cristiane Silva"
+            specialty="Exame Clínico Odontológico"
+            time="10:00"
+            date="10/02/2024"
+            image={require('@/assets/images/sugestion/imagem-tres.png')}
+            isPast
+          />
+          <ConsultaCard
+            doctor="Dr. Clara Castanho"
+            specialty="Exame Periodontal"
+            time="12:10"
+            date="24/11/2023"
+            image={require('@/assets/images/sugestion/imagem-quatro.png')}
+            isPast
+          />
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
   },
-  titleContainer: {
+  scrollContent: {
+    paddingHorizontal: 16,
+    paddingBottom: 40,
+  },
+  header: {
     flexDirection: 'row',
-    gap: 8,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+  },
+  backButton: {
+    padding: 5,
+  },
+  backButtonCircle: {
+    backgroundColor: '#007BFF',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonIcon: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#007BFF',
+  },
+  calendarButton: {
+    padding: 8,
+  },
+  sectionContainer: {
+    marginTop: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#0A3D91',
+    marginBottom: 12,
+  },
+  consultaCard: {
+    borderRadius: 16,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  nextConsultaCard: {
+    backgroundColor: '#1054CC',
+  },
+  pastConsultaCard: {
+    backgroundColor: '#6A90CD',
+  },
+  cardContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  doctorImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#E0E0E0',
+  },
+  doctorDetails: {
+    flex: 1,
+    marginLeft: 12,
+  },
+  doctorName: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+  },
+  examType: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.9,
+    marginBottom: 8,
+  },
+  dateTimeRow: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  timeText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  dateText: {
+    color: 'white',
+    fontSize: 14,
+    opacity: 0.9,
+  },
+  optionsButton: {
+    padding: 8,
+    marginLeft: 8,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  dotsContainer: {
+    flexDirection: 'row',
+    gap: 4,
+    width: 20,
+    height: 20,
+    alignItems: 'center'
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: 'white',
+  },
+  acceptButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  acceptButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  secondaryButtonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 20,
+  },
+  rescheduleButton: {
+    backgroundColor: '#B8B8B8',
+    borderRadius: 8,
+    padding: 14,
+    flex: 1,
+    marginRight: 8,
+    alignItems: 'center',
+  },
+  declineButton: {
+    backgroundColor: '#FF6052',
+    borderRadius: 8,
+    padding: 14,
+    flex: 1,
+    marginLeft: 8,
+    alignItems: 'center',
+  },
+  secondaryButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
   },
 });

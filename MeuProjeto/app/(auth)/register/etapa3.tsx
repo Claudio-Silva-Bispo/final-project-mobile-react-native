@@ -17,7 +17,7 @@ export default function Etapa3() {
 
   const handleConfirmar = () => {
     console.log({ usarMesmoEndereco, cep, numero, rua, bairro, complemento, cidade, estado });
-    router.push('/(auth)/cadastro/etapa4');
+    router.push('/(auth)/register/etapa4');
   };
 
   return (
@@ -110,7 +110,7 @@ export default function Etapa3() {
       </View>
 
       {/* Botão continuar */}
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/cadastro/etapa4')}>
+            <TouchableOpacity style={styles.button} onPress={() => router.push('/(auth)/register/etapa4')}>
               <Text style={styles.buttonText}>Continuar ›››</Text>
               {/*<Ionicons name="chevron-forward" size={20} color="#fff" />*/}
             </TouchableOpacity>
