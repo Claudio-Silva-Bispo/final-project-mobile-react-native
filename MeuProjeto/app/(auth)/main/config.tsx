@@ -203,13 +203,13 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<SettingsIcon />} 
           title="Preferências"
-          onPress={() => console.log('Preferências')}
+          onPress={() => router.push('/(auth)/config/preference')}
         />
         
         <ConfigMenuItem 
           icon={<PrivacyIcon />} 
           title="Política de Privacidade"
-          onPress={() => console.log('Política de Privacidade')}
+          onPress={() => router.push('/(auth)/config/privacyPolicy')}
         />
         
         <ConfigMenuItem 

@@ -49,7 +49,7 @@ const InicioScreen = () => {
             <Text style={styles.cardText}>
               Cada consulta ou indicação conta pontos que você pode trocar por benefícios exclusivos. Mantenha seu sorriso em dia e acumule vantagens!
             </Text>
-            <TouchableOpacity style={styles.planButton} onPress={() => router.push('/(auth)/config/BenefictsProgram')}>
+            <TouchableOpacity style={styles.planButton} onPress={() => router.push('/(auth)/config/benefictsProgram')}>
               <Text style={styles.planButtonText}>Confira seus pontos</Text>
             </TouchableOpacity>
           </View>
