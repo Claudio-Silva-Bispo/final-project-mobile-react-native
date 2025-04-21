@@ -69,6 +69,10 @@ const LoginScreen = () => {
     router.push('/(auth)/login/redefinir-senha');
   };
 
+  const handleTests = () => {
+    router.push('/(auth)/main/inicio');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Voltar */}
@@ -119,7 +123,7 @@ const LoginScreen = () => {
       </View>
 
       {/* Botão de login */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleTests}>
         <Text style={styles.loginButtonText}>ACESSAR</Text>
       </TouchableOpacity>
 

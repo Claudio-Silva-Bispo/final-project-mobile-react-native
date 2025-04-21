@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 
 const InicioScreen = () => {
   return (
@@ -37,7 +38,7 @@ const InicioScreen = () => {
           <Text style={styles.tipText}>
             Dente do siso{'\n'}
             Todo mundo precisa fazer a extração? Confira a dica da Dra. Letícia Almeida.{'\n\n'}
-            <Text style={styles.linkText}>Saiba mais</Text>
+            <Text style={styles.linkText} onPress={() => router.push('/(auth)/config/videoDoctorFake')}>Saiba mais</Text>
           </Text>
         </View>
 
@@ -48,7 +49,7 @@ const InicioScreen = () => {
             <Text style={styles.cardText}>
               Cada consulta ou indicação conta pontos que você pode trocar por benefícios exclusivos. Mantenha seu sorriso em dia e acumule vantagens!
             </Text>
-            <TouchableOpacity style={styles.planButton}>
+            <TouchableOpacity style={styles.planButton} onPress={() => router.push('/(auth)/config/BenefictsProgram')}>
               <Text style={styles.planButtonText}>Confira seus pontos</Text>
             </TouchableOpacity>
           </View>

@@ -24,8 +24,8 @@ export default function CadastrarNovaSenhaScreen() {
             return;
         }
         
-        // Rota da próxima etapa (etapa 5)
-        router.push('/cadastro/etapa5'); 
+        // Encaminhar para o Login
+        router.push('/login/success'); 
         };
 
     return (

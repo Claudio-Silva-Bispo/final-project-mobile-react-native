@@ -172,20 +172,20 @@ export default function ConfigScreen() {
         
         <ConfigMenuItem 
           icon={<FamilyIcon />} 
-          title="Família"
-          onPress={() => console.log('Família')}
+          title="Notificações"
+          onPress={() => router.push('/(auth)/config/notification')}
         />
         
         <ConfigMenuItem 
           icon={<CardIcon />} 
           title="Carteirinha"
-          onPress={() => console.log('Carteirinha')}
+          onPress={() => router.push('/(auth)/config/carteirinha')}
         />
         
         <ConfigMenuItem 
           icon={<LockIcon />} 
           title="Senha e Acesso"
-          onPress={() => console.log('Senha e Acesso')}
+          onPress={() => router.push('/(auth)/login/redefinir-senha')}
         />
         
         <ConfigMenuItem 
@@ -239,19 +239,19 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<PartnersIcon />} 
           title="Lista de Parceiros"
-          onPress={() => console.log('Lista de Parceiros')}
+          onPress={() => router.push('/(auth)/config/partners')}
         />
         
         <ConfigMenuItem 
           icon={<BenefitsIcon />} 
           title="Programa de Benefícios"
-          onPress={() => console.log('Programa de Benefícios')}
+          onPress={() => router.push('/(auth)/config/benefictsProgram')}
         />
 
       <ConfigMenuItem 
           icon={<SettingsIcon />} 
           title="Vídeos"
-          onPress={() => console.log('Videos')}
+          onPress={() => router.push('/(auth)/config/videoDoctorFake')}
         />
         
         <ConfigMenuItem 
