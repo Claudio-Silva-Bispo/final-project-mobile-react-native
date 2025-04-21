@@ -197,7 +197,7 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<PaymentIcon />} 
           title="Formas de Pagamento"
-          onPress={() => console.log('Formas de Pagamento')}
+          onPress={() => router.push('/(auth)/config/formaPagamento')}
         />
         
         <ConfigMenuItem 
