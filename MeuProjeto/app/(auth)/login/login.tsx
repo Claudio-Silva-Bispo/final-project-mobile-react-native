@@ -14,12 +14,16 @@ import {
 } from 'react-native';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../../firebaseConfig";
-import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs, query, where } from "firebase/firestore";
 
 const LoginScreen = () => {
   const [saveData, setSaveData] = useState(false);
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+
+   // Estados para armazenar os IDs encontrados no Firestore
+   const [idAutenticacao, setIdAutenticacao] = useState(null);
+   const [idCliente, setIdCliente] = useState(null);
 
   const handleLogin = async () => {
     try {
@@ -28,6 +32,11 @@ const LoginScreen = () => {
       // Tenta autenticar o usuário com Firebase Authentication usando email e senha
       const userCredential = await signInWithEmailAndPassword(auth, email, senha); 
       const user = userCredential.user;
+
+      console.log("Usuário autenticado:", user);
+
+      // Agora que o usuário foi autenticado, mostramos o email recebido
+      console.log("Email recebido para consulta no Firestore:", email);
     
       // Agora que o usuário foi autenticado, buscamos no Firestore pela correspondência do email
       const userQuery = query(
@@ -36,21 +45,43 @@ const LoginScreen = () => {
       );
     
       const querySnapshot = await getDocs(userQuery);
-  
+      
+      // Verifica se a consulta retornou algum documento
+      if (querySnapshot.empty) {
+        console.log("Nenhum documento encontrado para o email:", email);
+      } else {
+        console.log("Documento(s) encontrado(s) para o email:", email);
+        querySnapshot.forEach((doc) => {
+          console.log("Dados do documento:", doc.data());
+        });
+      }
+
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
-        const idCliente = userData?.idCliente;
+
+       // Extrai os IDs da consulta
+       const idClienteFromDoc = userData?.idCliente;
+       const idAutenticacaoFromDoc = userData?.idAutenticacao;
   
-        // Verifica o perfil
-        if (user.uid === idCliente) {
+        // Armazena os IDs nos estados para uso posterior
+        setIdCliente(idClienteFromDoc);
+        setIdAutenticacao(idAutenticacaoFromDoc);
+
+        console.log("IDs armazenados em memória:");
+        console.log("idCliente:", idClienteFromDoc);
+        console.log("idAutenticacao:", idAutenticacaoFromDoc);
+  
+        // Aqui você pode realizar uma verificação se necessário.
+        // Por exemplo: comparar se o idAutenticacao do Firestore corresponde ao uid do usuário autenticado
+        if (user.uid === idAutenticacaoFromDoc) {
           console.log("✅ Login bem-sucedido!");
           Alert.alert("Sucesso", "Login realizado com sucesso!");
   
-          // Navega para a Sessão Restrita de clientes
+          // Navega para a sessão restrita do cliente
           router.push("/(auth)/main/inicio");
         } else {
-          console.error("❌ Perfil inválido ou ID do cliente não corresponde");
+          console.error("❌ Perfil inválido ou os IDs não correspondem.");
           Alert.alert("Erro", "Você não tem permissão para acessar esta área.");
         }
       } else {
@@ -69,6 +100,7 @@ const LoginScreen = () => {
     router.push('/(auth)/login/redefinir-senha');
   };
 
+  // Função para lidar com o clique no botão de testes
   const handleTests = () => {
     router.push('/(auth)/main/inicio');
   };
@@ -123,7 +155,7 @@ const LoginScreen = () => {
       </View>
 
       {/* Botão de login */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleTests}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>ACESSAR</Text>
       </TouchableOpacity>
 

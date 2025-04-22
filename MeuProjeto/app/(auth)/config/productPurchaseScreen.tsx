@@ -245,7 +245,7 @@ const styles = StyleSheet.create({
   },
   backButton: {
     padding: 5,
-    paddingTop: 60
+    paddingTop: 50
   },
   backButtonCircle: {
     backgroundColor: '#007BFF',

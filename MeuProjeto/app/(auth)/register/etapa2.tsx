@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet, Image,
   Alert,
@@ -19,37 +19,49 @@ export default function Etapa2() {
   const [numero, setNumero] = useState('');
   const [complemento, setComplemento] = useState('');
   
- 
-  const { idCliente } = useLocalSearchParams() || { idCliente: 'default-id' };
+  // Ensure idCliente is properly extracted and handled as a string 
+  const params = useLocalSearchParams();
+  const idClienteArmazenado = params?.idCliente ? String(params.idCliente) : 'default-id';
+
+  useEffect(() => {
+    // Debug: verifique o valor e o tipo de idCliente
+    console.log("Dado recebido:", idClienteArmazenado, "Tipo:", typeof idClienteArmazenado);
+  }, [idClienteArmazenado]);
 
   const handleRegister = async () => {
-      console.log("🔹 Salvando dados da Etapa 2...");
-      try {
-        const docRef = await addDoc(collection(db, "t_endereco_residencia_usuario"), {
-          idCliente: idCliente,
-          cep: cep,
-          estado: estado,
-          cidade: cidade,
-          bairro: bairro,
-          rua: rua,
-          numero: numero,
-          complemento: complemento,
-          criadoEm: new Date().toISOString()
-        });
-    
-        console.log("✅ Dados salvos com sucesso! ID do cliente:", docRef.id);
-        Alert.alert("Sucesso", "Dados salvos com sucesso!");
-    
-        // Leva o ID gerado para a próxima etapa
-        router.push({
-          pathname: "/register/etapa3",
-          params: { idCliente: idCliente }
-        });
-      } catch (error) {
-        console.error("❌ Erro ao salvar dados:", error);
-        Alert.alert("Erro", "Não foi possível salvar os dados.");
-      }
-    };
+    console.log("🔹 Salvando dados da Etapa 2...");
+    try {
+      const docRef = await addDoc(collection(db, "t_endereco_residencia_usuario"), {
+        idCliente: idClienteArmazenado,
+        cep: cep,
+        estado: estado,
+        cidade: cidade,
+        bairro: bairro,
+        rua: rua,
+        numero: numero,
+        complemento: complemento,
+        criadoEm: new Date().toISOString()
+      });
+      
+      console.log("Etapa 2 iniciando >>>");
+      console.log("✅ Dados salvos com sucesso! ID do cliente:", idClienteArmazenado);
+      console.log("✅ ID do Cliente no banco", idClienteArmazenado);
+      Alert.alert("Sucesso", "Dados salvos com sucesso!");
+  
+      // Leva o ID gerado para a próxima etapa - fixing potential issue here
+      router.push({
+        pathname: "/register/etapa3",
+        params: { idCliente: idClienteArmazenado }
+      });
+      
+      console.log("Etapa 2 finalizada!");
+      console.log("Compartilhando idCliente para as demais etapas >>>", idClienteArmazenado);
+
+    } catch (error) {
+      console.error("❌ Erro ao salvar dados:", error);
+      Alert.alert("Erro", "Não foi possível salvar os dados.");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -63,7 +75,7 @@ export default function Etapa2() {
 
       {/* Título */}
       <Text style={styles.title}>
-        Agora informe o seu <Text style={{ fontWeight: 'bold' }}>endereço residencial</Text>
+        Agora informe o seu<Text style={styles.bold}>endereço residencial</Text>
       </Text>
 
       {/* Campos */}
@@ -145,7 +157,7 @@ export default function Etapa2() {
       </View>
 
       {/* Botão continuar */}
-      <TouchableOpacity style={styles.button} onPress={handleRegister}> {/*onPress={() => router.push('/(auth)/register/etapa3')}>*/}
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Continuar ›››</Text>
       </TouchableOpacity>
 
@@ -182,6 +194,10 @@ const styles = StyleSheet.create({
     textAlign: 'center', 
     marginBottom: 20, 
     color: '#081828' 
+  },
+  bold: {
+    fontWeight: 'bold',
+    color: '#081828',
   },
   label: { 
     marginBottom: 4, 

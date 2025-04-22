@@ -2,7 +2,7 @@ import { db } from '@/firebaseConfig';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { addDoc, collection, doc, getDoc } from 'firebase/firestore';
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { query, where, getDocs } from 'firebase/firestore';
 import { createUserWithEmailAndPassword } from "firebase/auth";
@@ -12,6 +12,12 @@ export default function SenhaScreen() {
   const [senha, setSenha] = useState('');
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const { idCliente } = useLocalSearchParams() || { idCliente: 'default-id' };
+  const idClienteArmazenado = String(idCliente);
+    
+  useEffect(() => {
+    // Debug: verifique o valor e o tipo de idCliente
+    console.log("Dado recebido:", idClienteArmazenado, "Tipo:", typeof idClienteArmazenado);
+  }, [idClienteArmazenado]);
 
   // Coletar o email que foi salvo no banco para criar a atutenticação
   const buscarEmailPorId = async (idCliente: string) => {
@@ -63,7 +69,7 @@ export default function SenhaScreen() {
   
       router.push({
         pathname: "/register/etapa5",
-        params: { idCliente }
+        params: { idClienteArmazenado }
       });
     } catch (error: any) {
       console.error("❌ Erro ao registrar:", error);

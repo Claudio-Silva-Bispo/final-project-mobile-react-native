@@ -4,8 +4,6 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { db } from "../../../firebaseConfig";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { useLocalSearchParams } from 'expo-router';
-
 
 export default function RedefinirSenhaScreen() {
   const [cpf, setCPF] = useState('');

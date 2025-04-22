@@ -3,8 +3,7 @@ import { router, useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
 import { db } from '../../../firebaseConfig';
-import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
-
+import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 export default function CadastrarNovaSenhaScreen() {
     const { idUsuario } = useLocalSearchParams();

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Pressable,Image, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Pressable, Image, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { addDoc, collection } from 'firebase/firestore';
@@ -16,40 +16,46 @@ export default function Etapa3() {
   const [cidade, setCidade] = useState('');
   const [estado, setEstado] = useState('');
 
-  const { idCliente } = useLocalSearchParams() || { idCliente: 'default-id' };
+  // Corrigindo a forma de obter o parâmetro
+  const params = useLocalSearchParams();
+  const idClienteArmazenado = params?.idCliente ? String(params.idCliente) : 'default-id';
+  
+  useEffect(() => {
+    // Debug: verifique o valor e o tipo de idCliente
+    console.log("Dado recebido:", idClienteArmazenado, "Tipo:", typeof idClienteArmazenado);
+  }, [idClienteArmazenado]);
 
   const handleRegister = async () => {
-        console.log("🔹 Salvando dados da Etapa 3...");
-        try {
-          const docRef = await addDoc(collection(db, "t_endereco_preferencia_usuario"), {
-            idCliente: idCliente,
-            cep: cep,
-            estado: estado,
-            cidade: cidade,
-            bairro: bairro,
-            rua: rua,
-            numero: numero,
-            complemento: complemento,
-            criadoEm: new Date().toISOString()
-          });
-      
-          console.log("✅ Dados salvos com sucesso! ID do cliente:", docRef.id);
-          Alert.alert("Sucesso", "Dados salvos com sucesso!");
-      
-          // Leva o ID gerado para a próxima etapa
-          router.push({
-            pathname: "/register/etapa4",
-            params: { idCliente: idCliente }
-          });
-        } catch (error) {
-          console.error("❌ Erro ao salvar dados:", error);
-          Alert.alert("Erro", "Não foi possível salvar os dados.");
-        }
-      };
+    console.log("🔹 Salvando dados da Etapa 3...");
+    try {
+      const docRef = await addDoc(collection(db, "t_endereco_preferencia_usuario"), {
+        idCliente: idClienteArmazenado,
+        cep: cep,
+        estado: estado,
+        cidade: cidade,
+        bairro: bairro,
+        rua: rua,
+        numero: numero,
+        complemento: complemento,
+        criadoEm: new Date().toISOString()
+      });
+  
+      console.log("✅ Dados salvos com sucesso! ID do cliente:", idClienteArmazenado);
+      Alert.alert("Sucesso", "Dados salvos com sucesso!");
+  
+      // Leva o ID gerado para a próxima etapa
+      router.push({
+        pathname: "/register/etapa4",
+        params: { idCliente: idClienteArmazenado }
+      });
+    } catch (error) {
+      console.error("❌ Erro ao salvar dados:", error);
+      Alert.alert("Erro", "Não foi possível salvar os dados.");
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-
       {/* Voltar */}
       <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
         <Ionicons name="arrow-back" size={26} color="#0057FF" />
@@ -59,7 +65,6 @@ export default function Etapa3() {
       <Image source={require('@/assets/images/logo/logo.png')} style={styles.logo} resizeMode="contain" />
       
       <Text style={styles.title}>
-
         Agora informe o seu <Text style={styles.bold}>endereço de preferência</Text>
       </Text>
 
@@ -145,18 +150,17 @@ export default function Etapa3() {
       </View>
 
       {/* Botão continuar */}
-      <TouchableOpacity style={styles.button} onPress={handleRegister}> {/*} onPress={() => router.push('/(auth)/register/etapa4')}>*/}
+      <TouchableOpacity style={styles.button} onPress={handleRegister}>
         <Text style={styles.buttonText}>Continuar ›››</Text>
-        {/*<Ionicons name="chevron-forward" size={20} color="#fff" />*/}
       </TouchableOpacity>
 
       {/* Indicador de progresso */}
       <View style={styles.dotsContainer}>
-          <View style={styles.dot} />
-          <View style={styles.dot} />
-          <View style={[styles.dot, styles.dotActive]} />
-          <View style={styles.dot} />
-          <View style={styles.dot} />
+        <View style={styles.dot} />
+        <View style={styles.dot} />
+        <View style={[styles.dot, styles.dotActive]} />
+        <View style={styles.dot} />
+        <View style={styles.dot} />
       </View>
     </ScrollView>
   );
@@ -199,7 +203,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 8,
-    backgroundColor: '#0000',
+    backgroundColor: '#f9f9f9',  // Alterado de '#0000' para '#f9f9f9'
     color: '#333'
   },
   inputContainer: {
@@ -236,10 +240,9 @@ const styles = StyleSheet.create({
     height: 8,
     borderRadius: 4,
     backgroundColor: '#ccc',
-    marginBottom:60,
+    marginBottom: 60,
   },
   dotActive: {
     backgroundColor: '#0057FF',
   },
-
 });

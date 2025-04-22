@@ -25,7 +25,8 @@ export default function RegisterScreen() {
         Alert.alert("Atenção", "Este e-mail já está cadastrado. Use outro e-mail ou faça login.");
         return;
       }
-  
+      
+      console.log("✅ Dado principal coletado, vamos para primeira fase >>> ");
       // Redireciona para a etapa 1 do cadastro, passando o email como parâmetro
       router.push({
         pathname: '/(auth)/register/etapa1',
@@ -50,7 +51,7 @@ export default function RegisterScreen() {
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder="Digite seu email"
         placeholderTextColor="#999"
         value={data}
         onChangeText={setData}
