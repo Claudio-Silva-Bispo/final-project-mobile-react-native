@@ -136,7 +136,7 @@ const LoginScreen = () => {
         <View style={styles.cardContent}>
           <Text style={styles.cardTitle}>Ainda não é cliente?</Text>
           <Text style={styles.cardText}>Clique abaixo para adquirir um plano</Text>
-          <TouchableOpacity style={styles.planButton}>
+          <TouchableOpacity style={styles.planButton} onPress={() => router.push('/(auth)/config/productPurchaseScreen')}>
             <Text style={styles.planButtonText}>QUERO COMPRAR</Text>
           </TouchableOpacity>
         </View>

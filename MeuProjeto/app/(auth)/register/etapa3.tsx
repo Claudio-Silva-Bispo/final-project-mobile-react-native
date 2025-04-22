@@ -71,6 +71,7 @@ export default function Etapa3() {
             placeholder="00000-000"
             value={cep}
             onChangeText={setCep}
+            placeholderTextColor="#999"
           />
         </View>
 
@@ -81,6 +82,7 @@ export default function Etapa3() {
             placeholder="Ex: 51"
             value={numero}
             onChangeText={setNumero}
+            placeholderTextColor="#999"
           />
         </View>
       </View>
@@ -91,6 +93,8 @@ export default function Etapa3() {
           style={styles.input}
           value={rua}
           onChangeText={setRua}
+          placeholder="Digite o nome da rua"	
+          placeholderTextColor="#999"
         />
       </View>
 
@@ -99,6 +103,7 @@ export default function Etapa3() {
         <TextInput
           style={styles.input}
           placeholder="Digite seu bairro"
+          placeholderTextColor="#999"
           value={bairro}
           onChangeText={setBairro}
         />
@@ -109,6 +114,7 @@ export default function Etapa3() {
         <TextInput
           style={styles.input}
           placeholder="Ex: próximo à avenida"
+          placeholderTextColor="#999"
           value={complemento}
           onChangeText={setComplemento}
         />
@@ -119,7 +125,8 @@ export default function Etapa3() {
           <Text style={styles.label}>Cidade</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite a cidade"
+            placeholder="Ex: São Paulo"
+            placeholderTextColor="#999"
             value={cidade}
             onChangeText={setCidade}
           />
@@ -129,7 +136,8 @@ export default function Etapa3() {
           <Text style={styles.label}>Estado</Text>
           <TextInput
             style={styles.input}
-            placeholder="Digite o estado"
+            placeholder="Ex: SP"
+            placeholderTextColor="#999"
             value={estado}
             onChangeText={setEstado}
           />

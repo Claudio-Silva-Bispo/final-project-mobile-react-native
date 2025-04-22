@@ -99,6 +99,7 @@ export default function Etapa2() {
         onChangeText={setRua}
         autoComplete='street-address'
         placeholder="Ex: Rua das Flores"
+        placeholderTextColor="#999"
       />
 
       <Text style={styles.label}>Bairro</Text>
@@ -124,7 +125,7 @@ export default function Etapa2() {
           <Text style={styles.label}>Cidade</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your value"
+            placeholder="Exemplo Salvador"
             placeholderTextColor="#999"
             value={cidade}
             onChangeText={setCidade}
@@ -135,7 +136,7 @@ export default function Etapa2() {
           <Text style={styles.label}>Estado</Text>
           <TextInput
             style={styles.input}
-            placeholder="Enter your value"
+            placeholder="Exemplo: BA"
             placeholderTextColor="#999"
             value={estado}
             onChangeText={setEstado}

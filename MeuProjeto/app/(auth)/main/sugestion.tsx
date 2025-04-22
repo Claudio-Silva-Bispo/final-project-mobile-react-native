@@ -20,6 +20,16 @@ type ConsultaCardProps = {
   isPast?: boolean;
 };
 
+const handleShowDetails = (doctor: string) => {
+  router.push({
+    pathname: '/(auth)/config/doctorDetails',
+    params: { 
+      doctor: encodeURIComponent(doctor),
+      t: Date.now().toString() 
+    }
+  });
+};
+
 const ConsultaCard: React.FC<ConsultaCardProps> = ({
   doctor,
   specialty,
@@ -43,7 +53,7 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
           </View>
         </View>
 
-        <TouchableOpacity style={styles.optionsButton}>
+        <TouchableOpacity style={styles.optionsButton} onPress={() => handleShowDetails(doctor)}>
           <View style={styles.dotsContainer}>
             <View style={styles.dot} />
             <View style={styles.dot} />
@@ -54,6 +64,9 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
     </View>
   );
 };
+
+
+
 
 export default function MinhasConsultas() {
   
@@ -90,6 +103,7 @@ export default function MinhasConsultas() {
             time="14:20"
             date="02/10/2024"
             image={require('@/assets/images/sugestion/imagem-um.png')}
+          
           />
           <TouchableOpacity style={styles.acceptButton}>
             <Text style={styles.acceptButtonText}>ACEITAR</Text>

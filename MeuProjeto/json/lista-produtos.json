@@ -1,0 +1,213 @@
+[
+    {
+      "id": "plan001",
+      "nome": "Sorrisos Essencial",
+      "categoria": "Individual",
+      "valor_mensal": 49.90,
+      "carencia": 60,
+      "beneficios": [
+        "Consultas de diagnóstico e avaliação",
+        "Limpeza dental (profilaxia) e aplicação de flúor",
+        "Restaurações em resina e amálgama",
+        "Tratamento de canal em dentes incisivos e caninos",
+        "Radiografias intraorais"
+      ],
+      "restricoes": "Não cobre tratamentos estéticos e ortodônticos.",
+      "descricao": "Plano odontológico básico para atendimento das necessidades essenciais de saúde bucal."
+    },
+    {
+      "id": "plan002",
+      "nome": "Sorrisos Conforto",
+      "categoria": "Individual",
+      "valor_mensal": 89.90,
+      "carencia": 45,
+      "beneficios": [
+        "Todos os benefícios do plano Essencial",
+        "Tratamento de canal em todos os dentes",
+        "Restaurações estéticas",
+        "Remoção de dentes inclusos e semi-inclusos",
+        "Radiografias panorâmicas",
+        "Raspagem subgengival (tratamento de gengiva)"
+      ],
+      "restricoes": "Não cobre implantes e ortodontia corretiva.",
+      "descricao": "Plano odontológico intermediário com cobertura ampliada para tratamentos mais complexos."
+    },
+    {
+      "id": "plan003",
+      "nome": "Sorrisos Premium",
+      "categoria": "Individual",
+      "valor_mensal": 129.90,
+      "carencia": 30,
+      "beneficios": [
+        "Todos os benefícios do plano Conforto",
+        "Clareamento dental profissional anual",
+        "Manutenção ortodôntica",
+        "Próteses removíveis",
+        "Coroas provisórias",
+        "Tomografia computadorizada",
+        "Atendimento de urgência 24h"
+      ],
+      "restricoes": "Não cobre implantes dentários.",
+      "descricao": "Plano odontológico completo com cobertura para tratamentos estéticos e ortodônticos."
+    },
+    {
+      "id": "plan004",
+      "nome": "Sorrisos Família",
+      "categoria": "Familiar",
+      "valor_mensal": 189.90,
+      "carencia": 45,
+      "beneficios": [
+        "Cobertura para até 4 pessoas da mesma família",
+        "Consultas de diagnóstico e avaliação",
+        "Limpeza dental (profilaxia) e aplicação de flúor",
+        "Restaurações em resina e amálgama",
+        "Tratamento de canal",
+        "Radiografias intraorais e panorâmicas",
+        "Raspagem subgengival (tratamento de gengiva)",
+        "Descontos em ortodontia"
+      ],
+      "restricoes": "Não cobre implantes e próteses fixas.",
+      "descricao": "Plano odontológico ideal para famílias, com cobertura ampla e econômica."
+    },
+    {
+      "id": "plan005",
+      "nome": "Sorrisos Premium Família",
+      "categoria": "Familiar",
+      "valor_mensal": 249.90,
+      "carencia": 30,
+      "beneficios": [
+        "Cobertura para até 5 pessoas da mesma família",
+        "Todos os benefícios do plano Família",
+        "Clareamento dental profissional anual para adultos",
+        "Manutenção ortodôntica",
+        "Próteses removíveis",
+        "Coroas provisórias",
+        "Tomografia computadorizada",
+        "Atendimento de urgência 24h"
+      ],
+      "restricoes": "Plano com carência reduzida.",
+      "descricao": "Plano odontológico familiar completo, com cobertura premium para toda a família."
+    },
+    {
+      "id": "plan006",
+      "nome": "Sorrisos Corporate Basic",
+      "categoria": "Empresarial",
+      "valor_mensal": 39.90,
+      "carencia": 30,
+      "beneficios": [
+        "Consultas de diagnóstico e avaliação",
+        "Limpeza dental (profilaxia) e aplicação de flúor",
+        "Restaurações em resina e amálgama",
+        "Tratamento de canal em dentes incisivos e caninos",
+        "Radiografias intraorais"
+      ],
+      "restricoes": "Mínimo de 10 funcionários. Não cobre tratamentos estéticos e ortodônticos.",
+      "descricao": "Plano odontológico empresarial básico com valor acessível para pequenas e médias empresas."
+    },
+    {
+      "id": "plan007",
+      "nome": "Sorrisos Corporate Plus",
+      "categoria": "Empresarial",
+      "valor_mensal": 69.90,
+      "carencia": 15,
+      "beneficios": [
+        "Todos os benefícios do plano Corporate Basic",
+        "Tratamento de canal em todos os dentes",
+        "Restaurações estéticas",
+        "Remoção de dentes inclusos e semi-inclusos",
+        "Radiografias panorâmicas",
+        "Raspagem subgengival (tratamento de gengiva)",
+        "Descontos em tratamentos estéticos"
+      ],
+      "restricoes": "Mínimo de 15 funcionários.",
+      "descricao": "Plano odontológico empresarial com cobertura ampliada e carência reduzida."
+    },
+    {
+      "id": "plan008",
+      "nome": "Sorrisos 60+",
+      "categoria": "Sênior",
+      "valor_mensal": 79.90,
+      "carencia": 30,
+      "beneficios": [
+        "Consultas de diagnóstico e avaliação",
+        "Limpeza dental especializada",
+        "Restaurações em resina e amálgama",
+        "Tratamento de canal",
+        "Próteses removíveis",
+        "Tratamento para disfunção da ATM",
+        "Atendimento domiciliar em casos especiais"
+      ],
+      "restricoes": "Exclusivo para pessoas acima de 60 anos.",
+      "descricao": "Plano odontológico especializado para as necessidades da terceira idade."
+    },
+    {
+      "id": "plan009",
+      "nome": "Sorrisos Orthodontic",
+      "categoria": "Individual",
+      "valor_mensal": 149.90,
+      "carencia": 90,
+      "beneficios": [
+        "Todos os benefícios do plano Conforto",
+        "Aparelho ortodôntico convencional",
+        "Manutenções mensais",
+        "Documentação ortodôntica completa",
+        "Contenções ao final do tratamento"
+      ],
+      "restricoes": "Não cobre aparelhos estéticos (cerâmicos ou linguais).",
+      "descricao": "Plano odontológico com foco em tratamento ortodôntico completo."
+    },
+    {
+      "id": "plan010",
+      "nome": "Sorrisos Kids",
+      "categoria": "Individual",
+      "valor_mensal": 59.90,
+      "carencia": 30,
+      "beneficios": [
+        "Consultas de diagnóstico e avaliação pediátrica",
+        "Limpeza dental (profilaxia) e aplicação de flúor",
+        "Restaurações em resina e ionômero de vidro",
+        "Radiografias intraorais",
+        "Tratamentos preventivos",
+        "Orientação de higiene bucal lúdica",
+        "Tratamento de traumatismos dentários"
+      ],
+      "restricoes": "Exclusivo para crianças até 12 anos.",
+      "descricao": "Plano odontológico especializado para as necessidades odontológicas infantis."
+    },
+    {
+      "id": "plan011",
+      "nome": "Sorrisos Black",
+      "categoria": "Individual",
+      "valor_mensal": 199.90,
+      "carencia": 0,
+      "beneficios": [
+        "Todos os benefícios do plano Premium",
+        "Sem carência para qualquer procedimento",
+        "Implantes dentários (até 2 por ano)",
+        "Próteses sobre implante",
+        "Enxertos ósseos",
+        "Aparelhos ortodônticos estéticos",
+        "Atendimento em consultórios premium",
+        "Clareamento a laser",
+        "Facetas em porcelana"
+      ],
+      "restricoes": "Sujeito à análise de perfil.",
+      "descricao": "Plano odontológico de alto padrão, com cobertura completa e sem carências."
+    },
+    {
+      "id": "plan012",
+      "nome": "Sorrisos Universitário",
+      "categoria": "Individual",
+      "valor_mensal": 29.90,
+      "carencia": 60,
+      "beneficios": [
+        "Consultas de diagnóstico e avaliação",
+        "Limpeza dental (profilaxia) e aplicação de flúor",
+        "Restaurações em resina e amálgama simples",
+        "Radiografias intraorais",
+        "Descontos em outros procedimentos"
+      ],
+      "restricoes": "Exclusivo para estudantes universitários com comprovante de matrícula.",
+      "descricao": "Plano odontológico com preço especial para universitários."
+    }
+  ]

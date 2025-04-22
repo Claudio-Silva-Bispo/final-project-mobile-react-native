@@ -91,6 +91,8 @@ export default function SenhaScreen() {
         style={styles.input}
         value={senha}
         onChangeText={setSenha}
+        placeholder='Digite sua senha'
+        placeholderTextColor="#999"
       />
 
       <Text style={styles.label}>Confirmar Senha</Text>
@@ -99,6 +101,8 @@ export default function SenhaScreen() {
         style={styles.input}
         value={confirmarSenha}
         onChangeText={setConfirmarSenha}
+        placeholder='Confirme sua senha'
+        placeholderTextColor="#999"
       />
 
       <View style={styles.requisitos}>
