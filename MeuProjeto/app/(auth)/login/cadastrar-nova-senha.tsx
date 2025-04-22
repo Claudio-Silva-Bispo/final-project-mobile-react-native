@@ -1,19 +1,31 @@
 import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import React, { useState } from 'react';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { db } from '../../../firebaseConfig';
+import { collection, query, where, getDocs, updateDoc, doc } from 'firebase/firestore';
+
 
 export default function CadastrarNovaSenhaScreen() {
-  const [senha, setSenha] = useState('');
+    const { idUsuario } = useLocalSearchParams();
+    const idCliente = String(idUsuario); // converter
+    const [senha, setSenha] = useState('');
     const [confirmarSenha, setConfirmarSenha] = useState('');
 
+    useEffect(() => {
+      // Debug: verifique o valor e o tipo de idCliente
+      console.log("ID recebido:", idCliente, "Tipo:", typeof idCliente);
+    }, [idCliente]);
+    
     const validarSenha = (senha: string) => {
         const regex =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*]).{8,}$/;
         return regex.test(senha);
     };
 
-    const handleContinuar = () => {
+    const handleContinuar = async () => {
+
+        console.log("🔹 Tentando confirmar senhas inseridas...");
         if (senha !== confirmarSenha) {
             Alert.alert('Erro', 'As senhas não coincidem.');
             return;
@@ -23,10 +35,47 @@ export default function CadastrarNovaSenhaScreen() {
             Alert.alert('Erro', 'A senha não atende aos requisitos.');
             return;
         }
+
+        try {
+          // Cria a referência ao documento do usuário na coleção t_seguranca_usuario usando o idCliente
+          if (typeof idCliente !== 'string') {
+              throw new Error('Invalid idCliente: Expected a string.');
+          }
+
+          const segCollection = collection(db, "t_seguranca_usuario");
+
+          // Cria uma query para buscar onde o campo idCliente é igual ao valor recebido
+          const q = query(segCollection, where("idCliente", "==", idCliente));
+
+          const querySnapshot = await getDocs(q);
+          
+          if (querySnapshot.empty) {
+            Alert.alert("Erro", "Usuário não encontrado na tabela de segurança. Verifique os dados.");
+            return;
+          }
+          
+          // Pega o primeiro documento retornado (caso exista apenas um)
+          const segDocRef = querySnapshot.docs[0].ref;
+          
+          // Atualiza o campo "senha" no documento encontrado
+          await updateDoc(segDocRef, { senha });
+          
+          console.log("🔹 Alteração de senha realizada com sucesso!");
+          Alert.alert("Sucesso", "Senha alterada com sucesso!");
+          
+          // Encaminha para a tela de sucesso ou para o Login
+          router.push('/login/success');
+        } catch (error) {
+          console.error("Erro na atualização da senha:", error);
+          Alert.alert("Erro", "Houve um erro ao atualizar a senha. Tente novamente.");
+        }
         
+        /*
+        console.log("🔹 Alteração de senha realizada com sucesso!");
         // Encaminhar para o Login
         router.push('/login/success'); 
-        };
+        */
+    };
 
     return (
         <View style={styles.container}>
@@ -55,6 +104,7 @@ export default function CadastrarNovaSenhaScreen() {
             secureTextEntry
             style={styles.input}
             placeholder='Nova senha'
+            placeholderTextColor={'#999'}
             value={senha}
             onChangeText={setSenha}
         />
@@ -63,6 +113,7 @@ export default function CadastrarNovaSenhaScreen() {
             secureTextEntry
             style={styles.input}
             placeholder='Confirme sua senha'
+            placeholderTextColor={'#999'}
             value={confirmarSenha}
             onChangeText={setConfirmarSenha}
         />

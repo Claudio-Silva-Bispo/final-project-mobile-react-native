@@ -2,32 +2,69 @@ import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Image } from 'react-native';
+import { db } from "../../../firebaseConfig";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { useLocalSearchParams } from 'expo-router';
+
 
 export default function RedefinirSenhaScreen() {
   const [cpf, setCPF] = useState('');
-  const [confirmarCPF, setConfirmarCPF] = useState('');
   const [confirmarDataNascimento, setConfirmarDataNascimento] = useState('');
 
-  const validarCPF = (cpf: string): boolean => {
-    // Confirmar CPF no banco
-    // Example validation logic
-    return cpf.length === 11; // Replace with actual validation logic
-  };
+  const handleContinuar = async () => {
 
-  const handleContinuar = () => {
-    /*if (cpf !== confirmarCPF  ) {
-      Alert.alert('Erro', 'Os dados não conferem com o sistema.');
+    console.log("🔹 Tentando conferir dados inseridos pelo usuário...");
+
+    if (!cpf || !confirmarDataNascimento) {
+      Alert.alert('Erro', 'Preencha todos os campos.');
       return;
     }
   
-    if (!validarCPF(cpf)) {
-      Alert.alert('Erro', 'Os dados não conferem com o sistema.');
-      return;
+    try {
+      const usuariosRef = collection(db, "t_usuario");
+  
+      // Tenta encontrar por CPF OU por Email
+      const consultaPorCpf = query(usuariosRef, where("cpf", "==", cpf));
+      const consultaPorEmail = query(usuariosRef, where("email", "==", cpf));
+  
+      const [resCpf, resEmail] = await Promise.all([
+        getDocs(consultaPorCpf),
+        getDocs(consultaPorEmail)
+      ]);
+  
+      const documentoEncontrado = resCpf.docs[0] || resEmail.docs[0];
+  
+      if (!documentoEncontrado) {
+        Alert.alert("Erro", "Usuário não encontrado. Verifique os dados.");
+        return;
+      }
+  
+      const dadosUsuario = documentoEncontrado.data();
+      const nascimentoSalvo = dadosUsuario?.dataNascimento;
+      const idCliente = documentoEncontrado.id;
+  
+      // Aqui comparamos a data de nascimento
+      if (nascimentoSalvo !== confirmarDataNascimento) {
+        Alert.alert("Erro", "Data de nascimento incorreta.");
+        return;
+      }
+      
+      console.log("🔹 Dados existem no banco e o idCliente é: ", idCliente);
+
+      console.log("🔹 Dados existem no banco...");
+      // Tudo certo, vai pra próxima tela
+      //router.push('/login/cadastrar-nova-senha');
+      router.push({
+        pathname: '/(auth)/login/cadastrar-nova-senha',
+        params: { idUsuario: idCliente },
+      });
+  
+    } catch (error) {
+      console.error("Erro na verificação:", error);
+      Alert.alert("Erro", "Houve um erro ao verificar os dados. Tente novamente.");
     }
-    */
-    // Rota da próxima etapa (etapa 5)
-    router.push('/login/cadastrar-nova-senha'); 
   };
+  
 
   return (
     <View style={styles.container}>
@@ -44,18 +81,20 @@ export default function RedefinirSenhaScreen() {
       <Text style={styles.subtitle}>confirmar seus <Text style={styles.bold}>dados</Text></Text>
 
       <TextInput
-        secureTextEntry
+        //secureTextEntry
         style={styles.input}
-        placeholder='CPF ou Carteirinha'
+        placeholder='Email ou CPF'
+        placeholderTextColor={'#999'}
         value={cpf}
         onChangeText={setCPF}
       />
 
       <Text style={styles.label}></Text>
       <TextInput
-        secureTextEntry
+        //secureTextEntry
         style={styles.input}
-        placeholder='Data de Nascimento'
+        placeholder='Data de Nascimento 01/01/2025'
+        placeholderTextColor={'#999'}
         value={confirmarDataNascimento}
         onChangeText={setConfirmarDataNascimento}
       />
