@@ -155,7 +155,7 @@ const LoginScreen = () => {
       </View>
 
       {/* Botão de login */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleTests}>
         <Text style={styles.loginButtonText}>ACESSAR</Text>
       </TouchableOpacity>
 
