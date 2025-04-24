@@ -57,9 +57,12 @@ export default function TabLayout() {
         name="chatbot"
         options={{
           title: 'Chat',
+          tabBarStyle: { display: 'none' },
+          headerShown: false,
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="bubble.left.fill" color={color} />
           ),
+        
         }}
       />
       <Tabs.Screen

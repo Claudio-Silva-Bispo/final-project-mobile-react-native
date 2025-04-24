@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useColorScheme } from '@/hooks/useColorScheme';
+import { router } from 'expo-router';
 
 // Componente para as mensagens individuais
 interface Message {
@@ -26,7 +27,7 @@ const MessageBubble = ({ message, isUser }: { message: Message; isUser: boolean 
   // Novas cores: azul para bot e cinza para usuário
   const bubbleStyle = isUser
     ? [styles.messageBubble, styles.userBubble, { backgroundColor: '#E5E5E5' }]
-    : [styles.messageBubble, styles.botBubble, { backgroundColor: '#003EA6' }];
+    : [styles.messageBubble, styles.botBubble, { backgroundColor: '#007BFF' }];
 
   const textStyle = isUser
     ? [styles.messageText, styles.userMessageText]
@@ -92,64 +93,77 @@ export default function ChatbotScreen() {
   }, [messages]);
 
   return (
-    <SafeAreaView style={[
-      styles.container,
-      { backgroundColor: '#FFFFFF' } // Fundo branco fixo
-    ]}>
-      <StatusBar barStyle="dark-content" />
-      
-      {/* Cabeçalho */}
-      <View style={styles.header}>
-        <Text style={[
-          styles.headerTitle,
-          { color: '#000000' }
-        ]}>Delfos - Assistente Virtual</Text>
-      </View>
-      
-      {/* Lista de mensagens */}
-      <FlatList
-        ref={flatListRef}
-        data={messages}
-        keyExtractor={item => item.id}
-        renderItem={({ item }) => (
-          <MessageBubble message={item} isUser={item.isUser} />
-        )}
-        contentContainerStyle={styles.messagesList}
-      />
-      
-      {/* Input de mensagem com padding inferior para evitar sobreposição com a tab bar */}
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-      >
-        <View style={styles.inputContainer}>
-          <TextInput
-            style={[
-              styles.input,
-              { 
-                backgroundColor: '#F0F0F0',
-                color: '#000000'
-              }
-            ]}
-            value={message}
-            onChangeText={setMessage}
-            placeholder="Digite sua mensagem..."
-            placeholderTextColor="#777777"
-            multiline
+
+    <KeyboardAvoidingView
+      style={{ flex: 1 }}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 70} // ajuste conforme sua tab bar
+    >
+
+        <SafeAreaView style={[
+          styles.container,
+          { backgroundColor: '#FFFFFF' } // Fundo branco fixo
+        ]}>
+          <StatusBar barStyle="dark-content" />
+          
+          {/* Cabeçalho */}
+          <View style={styles.header}>
+            <TouchableOpacity style={styles.backButton} onPress={router.back}>
+                <View style={styles.backButtonCircle}>
+                <Text style={styles.backButtonIcon}>←</Text>
+                </View>
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Delfos - Assistente Virtual</Text>
+          </View>
+          
+          {/* Lista de mensagens */}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <MessageBubble message={item} isUser={item.isUser} />
+            )}
+            contentContainerStyle={styles.messagesList}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd({ animated: true })}
           />
-          <TouchableOpacity 
-            style={[
-              styles.sendButton,
-              { backgroundColor: '#003EA6' }
-            ]} 
-            onPress={sendMessage}
-            disabled={message.trim() === ''}
+          
+          {/* Input de mensagem com padding inferior para evitar sobreposição com a tab bar */}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 70}
           >
-            <IconSymbol size={24} name="paperplane.fill" color="#fff" />
-          </TouchableOpacity>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.input,
+                  { 
+                    backgroundColor: '#F0F0F0',
+                    color: '#000000'
+                  }
+                ]}
+                value={message}
+                onChangeText={setMessage}
+                placeholder="Digite sua mensagem..."
+                placeholderTextColor="#777777"
+                multiline
+              />
+              <TouchableOpacity 
+                style={[
+                  styles.sendButton,
+                  { backgroundColor: '#007BFF' }
+                ]} 
+                onPress={sendMessage}
+                disabled={message.trim() === ''}
+              >
+                <IconSymbol size={24} name="paperplane.fill" color="#fff" />
+              </TouchableOpacity>
+            </View>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+    
+    </KeyboardAvoidingView>
+
   );
 }
 
@@ -157,10 +171,26 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  backButton: {
+    padding: 5,
+  },
+  backButtonCircle: {
+    backgroundColor: '#007BFF',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonIcon: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
   header: {
     padding: 15,
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#007BFF',
     flexDirection: 'row',
     alignItems: 'center',
   },
@@ -168,6 +198,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '600',
     marginLeft: 10,
+    color: '#007BFF',
   },
   messagesList: {
     paddingHorizontal: 15,
@@ -183,7 +214,7 @@ const styles = StyleSheet.create({
   botMessageContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    marginBottom: 10,
+    marginBottom: 25,
   },
   messageBubble: {
     maxWidth: '80%',
@@ -218,14 +249,15 @@ const styles = StyleSheet.create({
     borderTopColor: '#e0e0e0',
     alignItems: 'flex-end',
     // Adicionando padding inferior para evitar sobreposição com a tab bar
-    paddingBottom: Platform.OS === 'ios' ? 150 : 15,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 0,
     backgroundColor: '#FFFFFF',
+
   },
   input: {
     flex: 1,
     borderRadius: 20,
     paddingHorizontal: 15,
-    paddingVertical: 10,
+    paddingVertical: 15,
     maxHeight: 120,
     marginRight: 10,
   },
