@@ -15,6 +15,14 @@ import { IconSymbol } from '@/components/ui/IconSymbol';
 import { useColorScheme } from '@/hooks/useColorScheme';
 import { router } from 'expo-router';
 
+// Coletar o nome do usuario de forma dinâmica
+import { useUserData } from '../../../hooks/useUserData';
+import { useIdCliente } from '@/hooks/useIdCliente';
+
+// Verificar progresso de preenchimento das bases de dados
+import { verificarProgressoCliente } from '@/hooks/useVerificarProgressoCliente';
+import { verificarCamposPendentes } from '@/utils/verificarCamposPendentes';
+
 // Componente para as mensagens individuais
 interface Message {
   id: string;
@@ -49,10 +57,93 @@ const MessageBubble = ({ message, isUser }: { message: Message; isUser: boolean 
 };
 
 export default function ChatbotScreen() {
+
+  const [chatLiberado, setChatLiberado] = useState(false);
+
+  // Coletar o nome do usuario
+  const { idCliente, loading: loadingId } = useIdCliente();
+  const { userName, loading: loadingUser } = useUserData(idCliente);
+
+  useEffect(() => {
+    if (userName && !loadingUser) {
+      const firstMessage = {
+        id: Date.now().toString(),
+        text: `Olá ${userName}! Sou o Delfos, como posso ajudar você hoje?`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isUser: false,
+      };
+      setMessages([firstMessage]); 
+
+      // Enviar a mensagem de boas-vindas
+      setMessages([firstMessage]); 
+
+      // Aqui podemos enviar a lista de tabelas a serem preenchidas
+      const tabelas = [
+        't_usuario',
+        't_endereco_residencia_usuario',
+        't_endereco_preferencia_usuario',
+        't_dia_preferencia_usuario',
+        't_horario_preferencia_usuario',
+        't_turno_preferencia_usuario',
+      ];
+
+      const tabelaMessage = {
+        id: (Date.now() + 1).toString(),
+        text: `As seguintes tabelas precisam ser preenchidas: ${tabelas.join(', ')}`,
+        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        isUser: false,
+      };
+
+      setMessages(prevMessages => [...prevMessages, tabelaMessage]);
+
+      /*
+      // Verificar progresso do cliente
+      if (idCliente) {
+        verificarProgressoCliente(idCliente, userName, setMessages);
+      } else {
+        console.error("ID do cliente não encontrado");
+      }
+      */
+
+      // Verificar progresso do cliente
+    if (idCliente) {
+      verificarCamposPendentes(idCliente)
+        .then((tabelasPendentes) => {
+          if (tabelasPendentes.length > 0) {
+            const camposPendentesMessage = {
+              id: (Date.now() + 2).toString(),
+              text: `Os seguintes campos ainda precisam ser preenchidos: ${tabelasPendentes.join(', ')}`,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isUser: false,
+            };
+            setMessages(prevMessages => [...prevMessages, camposPendentesMessage]);
+          } else {
+            const todosCamposPreenchidosMessage = {
+              id: (Date.now() + 3).toString(),
+              text: `Todos os campos necessários foram preenchidos. Você está pronto para continuar! ${idCliente}`,
+              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+              isUser: false,
+            };
+            setMessages(prevMessages => [...prevMessages, todosCamposPreenchidosMessage]);
+          }
+        })
+        .catch((error) => {
+          console.error('Erro ao verificar campos pendentes:', error);
+        });
+    } else {
+      console.error("ID do cliente não encontrado");
+    }
+
+      
+    }
+  }, [userName, loadingUser, idCliente]);
+
+  // Removed duplicate declaration of verificarProgressoCliente
+
   const colorScheme = useColorScheme();
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
-    { id: '1', text: 'Olá! Como posso ajudar você hoje?', time: '10:00', isUser: false },
+    { id: '1', text: 'Olá! Sou o Delfos, como posso te ajudar?', time: '10:00', isUser: false },
   ]);
   const flatListRef = useRef<FlatList<Message>>(null);
 
@@ -74,15 +165,18 @@ export default function ChatbotScreen() {
     setMessage('');
     
     // Simular resposta do chatbot (aqui é onde você integraria com API, ChatGPT, etc.)
+    
     setTimeout(() => {
       const botMessage = {
         id: (Date.now() + 1).toString(),
-        text: 'Esta é uma resposta automática. Aqui você integraria com a API do ChatGPT e seu banco de dados.',
+        text: `Oi ${userName}, esta é uma resposta automática. Como posso te ajudar mais?`, 
         time: currentTime,
         isUser: false,
       };
       setMessages(prevMessages => [...prevMessages, botMessage]);
     }, 1000);
+    
+
   };
 
   // Scroll para a última mensagem quando uma nova é adicionada
@@ -269,3 +363,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 });
+
+

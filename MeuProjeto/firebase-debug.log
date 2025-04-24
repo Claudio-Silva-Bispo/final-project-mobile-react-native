@@ -1,0 +1,42 @@
+[debug] [2025-04-24T00:51:57.871Z] ----------------------------------------------------------------------
+[debug] [2025-04-24T00:51:57.875Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\claudio.bispo\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js init
+[debug] [2025-04-24T00:51:57.875Z] CLI Version:   14.2.1
+[debug] [2025-04-24T00:51:57.875Z] Platform:      win32
+[debug] [2025-04-24T00:51:57.876Z] Node Version:  v22.14.0
+[debug] [2025-04-24T00:51:57.876Z] Time:          Wed Apr 23 2025 21:51:57 GMT-0300 (Horário Padrão de Brasília)
+[debug] [2025-04-24T00:51:57.876Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-04-24T00:51:57.880Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2025-04-24T00:51:57.933Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-24T00:51:57.933Z] > authorizing via signed-in user (cssp.claudio@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  C:\Users\claudio.bispo\OneDrive - Ezze Seguros S.A\Área de Trabalho\projeto-dotnet\final-project-mobile-react-native\MeuProjeto
+
+[debug] [2025-04-24T00:51:58.134Z] *** [apiv2] error from fetch(https://firebase-public.firebaseio.com/cli.json, {"headers":{},"method":"GET"}): FetchError: request to https://firebase-public.firebaseio.com/cli.json failed, reason: self-signed certificate in certificate chain
+[warn] !  Unable to fetch the CLI MOTD and remote config. This is not a fatal error, but may indicate an issue with your network connection. 
+[debug] [2025-04-24T00:51:58.135Z] Failed to fetch MOTD FirebaseError: Failed to make request to https://firebase-public.firebaseio.com/cli.json
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2025-04-24T00:52:05.802Z] Checked if tokens are valid: true, expires at: 1745459339305
+[debug] [2025-04-24T00:52:05.802Z] Checked if tokens are valid: true, expires at: 1745459339305
+[debug] [2025-04-24T00:52:05.802Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects pageSize=100
+[debug] [2025-04-24T00:52:05.907Z] *** [apiv2] error from fetch(https://firebase.googleapis.com/v1beta1/projects?pageSize=100, {"headers":{},"method":"GET","signal":{}}): FetchError: request to https://firebase.googleapis.com/v1beta1/projects?pageSize=100 failed, reason: self-signed certificate in certificate chain
+[debug] [2025-04-24T00:52:05.907Z] Failed to make request to https://firebase.googleapis.com/v1beta1/projects?pageSize=100
+[debug] [2025-04-24T00:52:06.014Z] FirebaseError: Failed to make request to https://firebase.googleapis.com/v1beta1/projects?pageSize=100
+    at RetryOperation._fn (C:\Users\claudio.bispo\AppData\Roaming\npm\node_modules\firebase-tools\lib\apiv2.js:261:31)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+[error] 
+[error] Error: Failed to list Firebase projects. See firebase-debug.log for more info.

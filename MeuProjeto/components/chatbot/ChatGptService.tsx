@@ -16,6 +16,11 @@ interface ChatGPTServiceConfig {
 }
 
 class ChatGPTService {
+  /*
+  static sendMessage(message: string) {
+    throw new Error('Method not implemented.');
+  }
+    */
   private apiKey: string;
   private model: string;
   private baseURL: string = 'https://api.openai.com/v1/chat/completions';

@@ -14,7 +14,8 @@ import {
 } from 'react-native';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../../firebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, documentId, getDocs, query, where } from "firebase/firestore";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
   const [saveData, setSaveData] = useState(false);
@@ -24,6 +25,7 @@ const LoginScreen = () => {
    // Estados para armazenar os IDs encontrados no Firestore
    const [idAutenticacao, setIdAutenticacao] = useState(null);
    const [idCliente, setIdCliente] = useState(null);
+   const [userName, setUserName] = useState<string | null>(null);
 
   const handleLogin = async () => {
     try {
@@ -32,7 +34,7 @@ const LoginScreen = () => {
       // Tenta autenticar o usuário com Firebase Authentication usando email e senha
       const userCredential = await signInWithEmailAndPassword(auth, email, senha); 
       const user = userCredential.user;
-
+      
       console.log("Usuário autenticado:", user);
 
       // Agora que o usuário foi autenticado, mostramos o email recebido
@@ -68,12 +70,34 @@ const LoginScreen = () => {
         setIdCliente(idClienteFromDoc);
         setIdAutenticacao(idAutenticacaoFromDoc);
 
+        await AsyncStorage.setItem('idCliente', idClienteFromDoc);
+        await AsyncStorage.setItem('idAutentication', idAutenticacaoFromDoc);
+
         console.log("IDs armazenados em memória:");
         console.log("idCliente:", idClienteFromDoc);
         console.log("idAutenticacao:", idAutenticacaoFromDoc);
-  
-        // Aqui você pode realizar uma verificação se necessário.
-        // Por exemplo: comparar se o idAutenticacao do Firestore corresponde ao uid do usuário autenticado
+        
+
+        // Agora, vamos buscar o nome na tabela 't_usuario' com o idCliente
+        const usuarioQuery = query(
+          collection(db, "t_usuario"),
+          where(documentId(), "==", idClienteFromDoc)
+        );
+
+        const usuarioSnapshot = await getDocs(usuarioQuery);
+
+        if (!usuarioSnapshot.empty) {
+          usuarioSnapshot.forEach((doc) => {
+            const usuarioData = doc.data();
+            const nome = usuarioData?.nome;
+            console.log("Nome do usuário:", nome);
+            setUserName(nome);
+          });
+        } else {
+          console.log("Usuário não encontrado na tabela 't_usuario'.");
+        }
+
+        // comparar se o idAutenticacao do Firestore corresponde ao uid do usuário autenticado
         if (user.uid === idAutenticacaoFromDoc) {
           console.log("✅ Login bem-sucedido!");
           Alert.alert("Sucesso", "Login realizado com sucesso!");
@@ -155,7 +179,7 @@ const LoginScreen = () => {
       </View>
 
       {/* Botão de login */}
-      <TouchableOpacity style={styles.loginButton} onPress={handleTests}>
+      <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
         <Text style={styles.loginButtonText}>ACESSAR</Text>
       </TouchableOpacity>
 
@@ -310,3 +334,5 @@ const styles = StyleSheet.create({
 });
 
 export default LoginScreen;
+
+
