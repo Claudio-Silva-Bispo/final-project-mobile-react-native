@@ -115,7 +115,7 @@ export default function ChatbotScreen() {
           } else {
             const todosCamposPreenchidosMessage = {
               id: (Date.now() + 3).toString(),
-              text: `Todos os campos necessários foram preenchidos. Você está pronto para continuar! ${idCliente}`,
+              text: `Fiz uma breve análise dos seus dados e você está com tudo atualizado para novas consultas preventivas, Parabéns!. Você está pronto para continuar como atendimento!`,
               time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               isUser: false,
             };

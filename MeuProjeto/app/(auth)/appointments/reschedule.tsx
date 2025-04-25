@@ -1,11 +1,21 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { router } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView, Alert } from 'react-native';
 import { CheckBox } from 'react-native-elements';
+import firebase from '../../../firebaseConfig';
+import { useIdCliente } from '@/hooks/useIdCliente';
+import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, addDoc } from 'firebase/firestore';
 
 export default function ReagendamentoConsultaScreen() {
+  const { idCliente, loading: loadingId } = useIdCliente();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  
+  // Estados para armazenar os reagendamentos existentes
+  const [pendingReagendas, setPendingReagendas] = useState<any[]>([]);
+  const [historicReagendas, setHistoricReagendas] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState<boolean>(false);
+  
   const [selectedDays, setSelectedDays] = useState({
     seg: false,
     ter: false,
@@ -73,6 +83,154 @@ export default function ReagendamentoConsultaScreen() {
     setSelectedTime(prev => ({ ...prev, [time]: !prev[time] }));
   };
 
+  // Função para enviar os dados do reagendamento
+  const handleReagendar = async () => {
+    if (!idCliente) {
+      Alert.alert('Erro', 'Cliente não identificado.');
+      return;
+    }
+
+    if (!selectedDate) {
+      Alert.alert('Atenção', 'Selecione uma data para reagendamento.');
+      return;
+    }
+
+    try {
+      const db = getFirestore(firebase);
+      const reagendamentoRef = collection(db, 't_reagendamento_consultas');
+
+      // 1. Buscar registros pendentes para este cliente
+      const qPendentes = query(
+        reagendamentoRef, 
+        where('idCliente', '==', idCliente), 
+        where('status', '==', 'pendente')
+      );
+      const pendentesSnapshot = await getDocs(qPendentes);
+
+      // Atualiza todos os reagendamentos pendentes para "encerrado"
+      pendentesSnapshot.forEach(async (docSnap) => {
+        const docRef = doc(db, 't_reagendamento_consultas', docSnap.id);
+        await updateDoc(docRef, { status: 'encerrado' });
+      });
+
+      // 2. Criar novo registro de reagendamento com status "pendente"
+      const novoReagendamento = {
+        idCliente,
+        dataSelecionada: selectedDate,
+        diasPreferencia: selectedDays,
+        horariosPreferencia: selectedTime,
+        status: 'pendente',
+        criadoEm: new Date(),
+      };
+
+      await addDoc(reagendamentoRef, novoReagendamento);
+
+      Alert.alert('Sucesso', 'Reagendamento enviado com sucesso!');
+      // Opcional: Redirecione ou limpe os estados
+      // router.back();
+    } catch (error) {
+      console.error('Erro no reagendamento:', error);
+      Alert.alert('Erro', 'Houve um problema ao enviar o reagendamento.');
+    }
+  };
+
+  // Função para carregar os reagendamentos do cliente
+  const loadReagendamentos = async () => {
+    if (!idCliente) return;
+    try {
+      const db = getFirestore(firebase);
+      const reagendamentoRef = collection(db, 't_reagendamento_consultas');
+      const qTodos = query(reagendamentoRef, where('idCliente', '==', idCliente));
+      const snapshot = await getDocs(qTodos);
+
+      const pendentes: any[] = [];
+      const historicos: any[] = [];
+      
+      snapshot.forEach(docSnap => {
+        const data: { id: string; status: string } = { id: docSnap.id, ...docSnap.data() as { status: string } };
+        if (data.status === 'pendente') {
+          pendentes.push(data);
+        } else if (data.status === 'encerrado') {
+          historicos.push(data);
+        }
+      });
+
+      setPendingReagendas(pendentes);
+      setHistoricReagendas(historicos);
+    } catch (error) {
+      console.error('Erro ao carregar reagendamentos:', error);
+    }
+  };
+
+  // useEffect para carregar os reagendamentos assim que o idCliente estiver disponível
+  useEffect(() => {
+    if (idCliente) {
+      loadReagendamentos();
+    }
+  }, [idCliente]);
+
+  // Função para formatar os dados do card
+  const renderPendingCard = () => {
+    // Mapeamento para exibir nomes completos
+    const daysMapping: { [key: string]: string } = {
+      seg: 'Segunda',
+      ter: 'Terça',
+      qua: 'Quarta',
+      qui: 'Quinta',
+      sex: 'Sexta',
+      sab: 'Sábado',
+    };
+    const timeMapping: { [key: string]: string } = {
+      manha: 'Manhã',
+      tarde: 'Tarde',
+      noite: 'Noite',
+    };
+
+    return pendingReagendas.map(item => {
+      // Supondo que dataSelecionada está no formato "7-12" e o dia vem depois do hífen
+      const parts = item.dataSelecionada.split('-');
+      const diaSelecionado = parts[1] || item.dataSelecionada;
+
+      // Obter os nomes dos dias selecionados
+      const diasSelecionados = Object.entries(item.diasPreferencia)
+        .filter(([key, value]) => value === true)
+        .map(([key]) => daysMapping[key] || key)
+        .join(', ');
+
+      // Obter os horários selecionados
+      const horariosSelecionados = Object.entries(item.horariosPreferencia)
+        .filter(([key, value]) => value === true)
+        .map(([key]) => timeMapping[key] || key)
+        .join(', ');
+
+      return (
+        <View key={item.id} style={styles.cardContent}>
+          <Text style={styles.cardLabel}>Data Selecionada:</Text>
+          <Text style={styles.cardValue}>{diaSelecionado}</Text>
+
+          <Text style={styles.cardLabel}>Dias de Preferência:</Text>
+          <Text style={styles.cardValue}>{diasSelecionados || 'Nenhum'}</Text>
+
+          <Text style={styles.cardLabel}>Horários de Atendimento:</Text>
+          <Text style={styles.cardValue}>{horariosSelecionados || 'Nenhum'}</Text>
+
+        </View>
+      );
+    });
+  };
+
+  const renderHistoricCard = () => {
+    return historicReagendas.map(item => (
+      <View key={item.id} style={styles.cardContent}>
+        <Text style={styles.cardLabel}>Data:</Text>
+        <Text style={styles.cardValue}>{item.dataSelecionada}</Text>
+        <Text style={styles.cardLabel}>Status:</Text>
+        <Text style={styles.cardValue}>{item.status}</Text>
+      </View>
+    ));
+  };
+
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView>
@@ -121,9 +279,37 @@ export default function ReagendamentoConsultaScreen() {
             ))}
           </View>
         </View>
-        <TouchableOpacity style={styles.acceptButton}>
+        <TouchableOpacity style={styles.acceptButton} onPress={handleReagendar}>
                     <Text style={styles.acceptButtonText}>REAGENDAR</Text>
-                  </TouchableOpacity>
+        </TouchableOpacity>
+
+        {/* Card de Reagendamentos */}
+        <View style={styles.cardContainer}>
+          <Text style={styles.cardTitle}>Reagendamentos</Text>
+          {/* Card com reagendamento pendente */}
+          {pendingReagendas.length > 0 && (
+            <View style={styles.card}>
+              <Text style={styles.cardSubtitle}>Pendente</Text>
+              {renderPendingCard()}
+            </View>
+          )}
+
+          {/* Botão para mostrar/ocultar histórico */}
+          <TouchableOpacity onPress={() => setShowHistory(!showHistory)} style={styles.historyToggleButton}>
+            <Text style={styles.historyToggleButtonText}>
+              {showHistory ? 'Ocultar Histórico' : 'Mostrar Histórico'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Card para reagendamentos históricos */}
+          {showHistory && historicReagendas.length > 0 && (
+            <View style={styles.card}>
+              <Text style={styles.cardSubtitle}>Atendimentos encerrados</Text>
+              {renderHistoricCard()}
+            </View>
+          )}
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -195,7 +381,7 @@ const styles = StyleSheet.create({
   dayText: { fontSize: 14, color: '#000' },
   selectedDay: { backgroundColor: '#007BFF' },
   selectedDayText: { color: '#FFF' },
-  preferenceTitle: { fontSize: 16, fontWeight: '600', marginTop: 20, marginBottom: 10, color: '#333' },
+  preferenceTitle: { fontSize: 16, fontWeight: '600', marginTop: 3, marginBottom: 0, color: '#333' },
   daysPreferenceContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   timePreferenceContainer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
   checkboxContainer: {
@@ -214,7 +400,6 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 14,
     alignItems: 'center',
-    marginTop: 8,
     marginBottom: 12,
     width: '90%',
     left: 20,
@@ -224,4 +409,25 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+  cardContainer: { paddingHorizontal: 20, marginBottom: 20 },
+  cardTitle: { fontSize: 18, fontWeight: 'bold', color: '#0A3D91', marginBottom: 10 },
+  card: {
+    backgroundColor: '#E8F7FC',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 10,
+  },
+  cardSubtitle: { fontSize: 16, fontWeight: '600', color: '#007BFF', marginBottom: 8 },
+  cardContent: { marginBottom: 8 },
+  cardText: { fontSize: 14, color: '#333' },
+  historyToggleButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 8,
+    paddingVertical: 10,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  cardLabel: { fontSize: 14, fontWeight: '600', color: '#333' },
+  cardValue: { fontSize: 14, color: '#555', marginBottom: 6 },
+  historyToggleButtonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
 });

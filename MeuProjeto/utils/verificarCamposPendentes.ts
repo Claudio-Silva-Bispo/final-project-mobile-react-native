@@ -7,9 +7,9 @@ export const verificarCamposPendentes = async (idCliente: string) => {
       { collection: 't_usuario', fields: ['nome', 'cpf', 'dataNascimento', 'email', 'genero', 'telefone'], isDocId: true },
       { collection: 't_endereco_residencia_usuario', fields: ['cep', 'estado', 'cidade', 'rua', 'numero'], isDocId: false },
       { collection: 't_endereco_preferencia_usuario', fields: ['cep', 'estado', 'cidade', 'rua', 'numero'], isDocId: false },
-      { collection: 't_dias_preferencia_usuario', fields: ['dias'], isDocId: false },
-      { collection: 't_turno_preferencia_usuario', fields: ['turno'], isDocId: false },
-      { collection: 't_horario_preferencia_usuario', fields: ['turno'], isDocId: false },
+      { collection: 't_dia_preferencia_usuario', fields: ['preferencia'], isDocId: false },
+      { collection: 't_turno_preferencia_usuario', fields: ['preferencia'], isDocId: false },
+      { collection: 't_horario_preferencia_usuario', fields: ['idCliente'], isDocId: false },
     ];
 
     let camposPendentes: string[] = [];
