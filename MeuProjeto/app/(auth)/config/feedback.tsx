@@ -5,10 +5,14 @@ import { FontAwesome } from '@expo/vector-icons';
 import { db } from '../../../firebaseConfig';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
+// Pegar o idCliente com base no idAutenticacao ou seja, do usuário logado
+import { useIdCliente } from '@/hooks/useIdCliente';
+
 export default function FeedbackScreen() {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { idCliente, loading: loadingId } = useIdCliente();
 
   const handleSubmit = async () => {
     if (rating === 0) {
@@ -20,6 +24,7 @@ export default function FeedbackScreen() {
 
     try {
       await addDoc(collection(db, 't_feedback'), {
+        idCliente: idCliente,
         nota: rating,
         comentario: comment,
         dataEnvio: Timestamp.now()
