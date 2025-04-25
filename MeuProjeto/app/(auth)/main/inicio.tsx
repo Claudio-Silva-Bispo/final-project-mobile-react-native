@@ -40,7 +40,7 @@ const InicioScreen = () => {
           <Text style={styles.tipText}>
             Dente do siso{'\n'}
             Todo mundo precisa fazer a extração? Confira a dica da Dra. Letícia Almeida.{'\n\n'}
-            <Text style={styles.linkText} onPress={() => router.push('/(auth)/config/videoDoctorFake')}>Saiba mais</Text>
+            <Text style={styles.linkText} onPress={() => router.push('/(auth)/config/videoTrailScreen')}>Saiba mais</Text>
           </Text>
         </View>
 

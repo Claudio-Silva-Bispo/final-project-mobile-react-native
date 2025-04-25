@@ -256,8 +256,8 @@ export default function ConfigScreen() {
       <ConfigMenuItem 
           icon={<SettingsIcon />} 
           title="Vídeos"
-          onPress={() => router.push('/(auth)/config/videoDoctorFake')}
-        />
+          onPress={() => router.push('/(auth)/config/videoTrailScreen')}
+      />
 
       <ConfigMenuItem 
           icon={<PrivacyIcon />} 
