@@ -119,6 +119,15 @@ const PartnersIcon = () => (
   </View>
 );
 
+const DinheiroIcon = () => (
+  <View style={styles.iconSvg}>
+    <View style={styles.dinheiroIconCircle} />
+    <View style={styles.dinheiroIconVertical} />
+    <View style={styles.dinheiroIconHorizontal1} />
+    <View style={styles.dinheiroIconHorizontal2} />
+  </View>
+);
+
 const BenefitsIcon = () => (
   <View style={styles.iconSvg}>
     <View style={styles.benefitsIconStar} />
@@ -139,6 +148,8 @@ const LogoutIcon = () => (
     <View style={styles.logoutIconBox} />
     <View style={styles.logoutIconArrow} />
   </View>
+
+  
 );
 
 
@@ -213,10 +224,6 @@ export default function ConfigScreen() {
           onPress={() => router.push('/(auth)/config/formaPagamento')}
         />
         
-        
-        
-        
-        
         <ConfigMenuItem 
           icon={<DentalIcon />} 
           title="Rotina de Cuidados"
@@ -242,8 +249,14 @@ export default function ConfigScreen() {
         />
         
         <ConfigMenuItem 
-          icon={<PartnersIcon />} 
+          icon={<DinheiroIcon />} 
           title="Lista de Parceiros"
+          onPress={() => router.push('/(auth)/config/doctorDetails')}
+        />
+
+        <ConfigMenuItem 
+          icon={<PartnersIcon />} 
+          title="Última consulta"
           onPress={() => router.push('/(auth)/config/partners')}
         />
         
@@ -694,5 +707,41 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 11,
     right: 3,
+  },
+
+  // dinheiro
+  dinheiroIconCircle: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    borderWidth: 2,
+    borderColor: '#007BFF',
+    position: 'absolute',
+    top: 3,
+    left: 3,
+  },
+  dinheiroIconVertical: {
+    width: 2,
+    height: 12,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 6,
+    left: 11,
+  },
+  dinheiroIconHorizontal1: {
+    width: 8,
+    height: 2,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 9,
+    left: 8,
+  },
+  dinheiroIconHorizontal2: {
+    width: 6,
+    height: 2,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 13,
+    left: 9,
   },
 });

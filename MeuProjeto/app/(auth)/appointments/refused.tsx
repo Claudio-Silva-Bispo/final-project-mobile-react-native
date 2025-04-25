@@ -1,15 +1,19 @@
-import { IconSymbol } from '@/components/ui/IconSymbol';
+
 import { router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, TextInput, SafeAreaView, Alert } from 'react-native';
-import firebase from '../../../firebaseConfig';
 import { useIdCliente } from '@/hooks/useIdCliente';
-import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
+import { getFirestore, collection, addDoc, Timestamp } from 'firebase/firestore';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function RecusaConsultaScreen() {
   const [motivoRecusa, setMotivoRecusa] = useState('');
   const { idCliente, loading: loadingId } = useIdCliente();
   const db = getFirestore();
+
+  // Recuperar os dados da consulta para atualizar ela.
+    const { consultaId, data, horario, status } = useLocalSearchParams();
+    console.log("O id da consulta recuperado:", consultaId)
 
   const handleEnviarRecusa = async () => {
     if (!motivoRecusa.trim()) {
@@ -18,7 +22,8 @@ export default function RecusaConsultaScreen() {
     }
 
     try {
-      await addDoc(collection(db, 't_motivo_recusa'), {
+      await addDoc(collection(db, 't_sugestoes_consultas_recusadas'), {
+        idSugestaoConsulta: consultaId,
         motivo: motivoRecusa.trim(),
         idCliente: idCliente,
         criadoEm: Timestamp.now(),

@@ -1,5 +1,5 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
@@ -8,8 +8,13 @@ import {
   TouchableOpacity,
   ScrollView,
   SafeAreaView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { router } from 'expo-router';
+import { useIdCliente } from '@/hooks/useIdCliente';
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import firebase, { db } from '../../../firebaseConfig';
 
 type ConsultaCardProps = {
   doctor: string;
@@ -18,17 +23,9 @@ type ConsultaCardProps = {
   date: string;
   image: any;
   isPast?: boolean;
+  onShowDetails: (doctor: string) => void;
 };
 
-const handleShowDetails = (doctor: string) => {
-  router.push({
-    pathname: '/(auth)/config/doctorDetails',
-    params: { 
-      doctor: encodeURIComponent(doctor),
-      t: Date.now().toString() 
-    }
-  });
-};
 
 const ConsultaCard: React.FC<ConsultaCardProps> = ({
   doctor,
@@ -37,13 +34,12 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
   date,
   image,
   isPast = false,
+  onShowDetails,
 }) => {
-
   return (
     <View style={[styles.consultaCard, isPast ? styles.pastConsultaCard : styles.nextConsultaCard]}>
       <View style={styles.cardContent}>
         <Image source={image} style={styles.doctorImage} />
-        
         <View style={styles.doctorDetails}>
           <Text style={styles.doctorName}>{doctor}</Text>
           <Text style={styles.examType}>{specialty}</Text>
@@ -52,8 +48,7 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
             <Text style={styles.dateText}>{date}</Text>
           </View>
         </View>
-
-        <TouchableOpacity style={styles.optionsButton} onPress={() => handleShowDetails(doctor)}>
+        <TouchableOpacity style={styles.optionsButton} onPress={() => onShowDetails(doctor)} /*onPress={closeModal}*/>
           <View style={styles.dotsContainer}>
             <View style={styles.dot} />
             <View style={styles.dot} />
@@ -65,23 +60,149 @@ const ConsultaCard: React.FC<ConsultaCardProps> = ({
   );
 };
 
-
-
-
 export default function MinhasConsultas() {
-  
-  const handleRefused = () => {
-    router.push('/(auth)/appointments/refused');
+  const { idCliente, loading: loadingId } = useIdCliente();
+  const [consulta, setConsulta] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+
+
+  // Primeiro consultar as sugestões de consultas
+  const consultarSugestao = async () => {
+    try {
+      const db = getFirestore(firebase);
+      const sugestaoRef = collection(db, 't_sugestao_consulta_clinica');
+
+      // Olhar as consultas aceitas e pelo idCliente e não do autenticado
+      const q = query(sugestaoRef, where('idCliente', '==', idCliente), where('status', '==', 'aceita'));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const docData = snapshot.docs[0];
+
+        // Salvar o id da sugestão pois vou usar nos demais métodos.
+        const dados = { id: docData.id, ...docData.data() };
+        
+        setConsulta(dados);
+      } else {
+        setConsulta(null);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar sugestão de consulta:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReschedule = () => {
-      router.push('/(auth)/appointments/reschedule');
-    };
+  // Consultar o cliente
+  useEffect(() => {
+    if (idCliente) consultarSugestao();
+  }, [idCliente]);
+
+
+
+  // Aceitar a sugestão de consulta
+  const handleAceitarAgendamento = async () => {
+    try {
+      if (!consulta) return;
+      
+      /*
+      // 1. Atualizar o status do agendamento para "aceito"
+      const agendamentoRef = doc(db, "t_sugestao_consulta_clinica", consulta.id);
+      await updateDoc(agendamentoRef, {
+        status: "em momento de aceite",
+      });
+      */
+  
+      // Navegar para a tela de aceite passando os dados necessários
+      router.push({
+        pathname: '/(auth)/appointments/accept',
+        params: { 
+          consultaId: consulta.id,
+          idCliente: idCliente,
+          dentista: consulta.Dentista,
+          especialidade: consulta.Especialidade,
+          data: consulta.data,
+          turno: consulta.turno
+        }
+      });
+
+    } catch (error) {
+      console.error("Erro ao aceitar agendamento:", error);
+      Alert.alert("Erro", "Não foi possível aceitar o agendamento.");
+    }
+  };
+
+   
+  // Para direcionar para a tela de consulta reagendada
+  const handleReschedule = async () => {
+    try {
+      if (!consulta) return;
+      
+      // Atualizar o status para "reagendado"
+      const agendamentoRef = doc(db, "t_sugestao_consulta_clinica", consulta.id);
+      await updateDoc(agendamentoRef, {
+        status: "reagendado",
+      });
+      
+      // Navegar para a tela de reagendamento passando os dados necessários
+      router.push({
+        pathname: '/(auth)/appointments/reschedule',
+        params: { 
+          consultaId: consulta.id,
+          idCliente: idCliente,
+          dentista: consulta.Dentista,
+          especialidade: consulta.Especialidade,
+          data: consulta.data,
+          turno: consulta.turno
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao reagendar consulta:", error);
+      Alert.alert("Erro", "Não foi possível reagendar a consulta.");
+    }
+  };
+  
+  // Para direcionar para a tela de consulta recusada ou reagendada
+  const handleRefused = async () => {
+    try {
+      if (!consulta) return;
+      
+      // Atualizar o status para "recusado"
+      const agendamentoRef = doc(db, "t_sugestao_consulta_clinica", consulta.id);
+      await updateDoc(agendamentoRef, {
+        status: "recusado",
+      });
+      
+      // Navegar para a tela de recusa passando os dados necessários
+      router.push({
+        pathname: '/(auth)/appointments/refused',
+        params: { 
+          consultaId: consulta.id,
+          idCliente: idCliente
+        }
+      });
+    } catch (error) {
+      console.error("Erro ao recusar consulta:", error);
+      Alert.alert("Erro", "Não foi possível recusar a consulta.");
+    }
+  };
+
+  const [selectedDoctor, setSelectedDoctor] = useState<string | null>(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const handleShowDetails = (doctor: string) => {
+    setSelectedDoctor(doctor);
+    setIsModalVisible(true);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+    setSelectedDoctor(null);
+  };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <View style={styles.backButtonCircle}>
@@ -94,29 +215,36 @@ export default function MinhasConsultas() {
           </TouchableOpacity>
         </View>
 
-        {/* Próxima Consulta */}
         <View style={styles.sectionContainer}>
           <Text style={styles.sectionTitle}>Próxima Consulta</Text>
-          <ConsultaCard
-            doctor="Dr. Carlos Almendra"
-            specialty="Exame de Oclusão"
-            time="14:20"
-            date="02/10/2024"
-            image={require('@/assets/images/sugestion/imagem-um.png')}
-          
-          />
-          <TouchableOpacity style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>ACEITAR</Text>
-          </TouchableOpacity>
 
-          <View style={styles.secondaryButtonsContainer}>
-            <TouchableOpacity style={styles.rescheduleButton} onPress={handleReschedule}>
-              <Text style={styles.secondaryButtonText}>REAGENDAR</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.declineButton} onPress={handleRefused}>
-              <Text style={styles.secondaryButtonText}>RECUSAR</Text>
-            </TouchableOpacity>
-          </View>
+          {loading ? (
+            <ActivityIndicator size="large" color="#007BFF" />
+          ) : consulta ? (
+            <>
+              <ConsultaCard
+                doctor={consulta.Dentista}
+                specialty={consulta.Especialidade}
+                time={consulta.Horario}
+                date={consulta.data}
+                image={require('@/assets/images/sugestion/imagem-um.png')}
+                onShowDetails={handleShowDetails}
+              />
+              <TouchableOpacity style={styles.acceptButton} onPress={handleAceitarAgendamento}>
+                <Text style={styles.acceptButtonText}>ACEITAR</Text>
+              </TouchableOpacity>
+              <View style={styles.secondaryButtonsContainer}>
+                <TouchableOpacity style={styles.rescheduleButton} onPress={handleReschedule}>
+                  <Text style={styles.secondaryButtonText}>REAGENDAR</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.declineButton} onPress={handleRefused}>
+                  <Text style={styles.secondaryButtonText}>RECUSAR</Text>
+                </TouchableOpacity>
+              </View>
+            </>
+          ) : (
+            <Text style={{ color: '#333' }}>Nenhuma sugestão de consulta disponível.</Text>
+          )}
         </View>
 
         {/* Consultas Anteriores */}
@@ -129,6 +257,7 @@ export default function MinhasConsultas() {
             date="14/06/2024"
             image={require('@/assets/images/sugestion/imagem-dois.png')}
             isPast
+            onShowDetails={handleShowDetails}
           />
           <ConsultaCard
             doctor="Dra. Cristiane Silva"
@@ -137,6 +266,7 @@ export default function MinhasConsultas() {
             date="10/02/2024"
             image={require('@/assets/images/sugestion/imagem-tres.png')}
             isPast
+            onShowDetails={handleShowDetails}
           />
           <ConsultaCard
             doctor="Dr. Clara Castanho"
@@ -145,14 +275,31 @@ export default function MinhasConsultas() {
             date="24/11/2023"
             image={require('@/assets/images/sugestion/imagem-quatro.png')}
             isPast
+            onShowDetails={handleShowDetails}
           />
         </View>
+
+        {/* Doctor Details Modal */}
+        {isModalVisible && selectedDoctor && (
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Detalhes do Médico</Text>
+              <Text style={styles.modalText}>{selectedDoctor}</Text>
+              {/* Add more doctor details here */}
+              <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
+                <Text style={styles.closeButtonText}>Fechar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  // ... [o mesmo bloco de estilos que você já tem] ...
+  // 👇 mantive igual, então nem precisa alterar nada aqui
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
@@ -314,5 +461,47 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+
+  // modal
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1000,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 20,
+    width: '80%',
+    maxHeight: '70%',
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 15,
+    color: '#0A3D91',
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 10,
+    color: '#333',
+  },
+  closeButton: {
+    backgroundColor: '#007BFF',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });

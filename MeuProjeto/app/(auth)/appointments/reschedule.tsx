@@ -5,11 +5,16 @@ import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView, Ale
 import { CheckBox } from 'react-native-elements';
 import firebase from '../../../firebaseConfig';
 import { useIdCliente } from '@/hooks/useIdCliente';
-import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, addDoc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
+import { useLocalSearchParams } from 'expo-router';
 
 export default function ReagendamentoConsultaScreen() {
   const { idCliente, loading: loadingId } = useIdCliente();
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
+
+  // Recuperar os dados da consulta para atualizar ela.
+  const { consultaId, data, horario, status } = useLocalSearchParams();
+  console.log("O id da consulta recuperado:", consultaId)
   
   // Estados para armazenar os reagendamentos existentes
   const [pendingReagendas, setPendingReagendas] = useState<any[]>([]);
@@ -115,6 +120,7 @@ export default function ReagendamentoConsultaScreen() {
 
       // 2. Criar novo registro de reagendamento com status "pendente"
       const novoReagendamento = {
+        idSugestaoConsulta: consultaId,
         idCliente,
         dataSelecionada: selectedDate,
         diasPreferencia: selectedDays,

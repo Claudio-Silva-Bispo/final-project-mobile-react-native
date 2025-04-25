@@ -358,6 +358,8 @@ export default function MinhasConsultas() {
     setDetailsModalVisible(true);
   };
 
+  
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
@@ -376,7 +378,7 @@ export default function MinhasConsultas() {
 
         {/* Próxima Consulta */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Próxima Consulta</Text>
+          <Text style={styles.sectionTitle}>Nossos parceiros</Text>
           <ConsultaCard
             doctor="Dr. Carlos Almendra"
             specialty="Exame de Oclusão"
@@ -385,18 +387,8 @@ export default function MinhasConsultas() {
             image={require('@/assets/images/sugestion/imagem-um.png')}
             onShowDetails={() => showDoctorDetails("Dr. Carlos Almendra")}
           />
-          <TouchableOpacity style={styles.acceptButton}>
-            <Text style={styles.acceptButtonText}>ACEITAR</Text>
-          </TouchableOpacity>
 
-          <View style={styles.secondaryButtonsContainer}>
-            <TouchableOpacity style={styles.rescheduleButton} onPress={handleReschedule}>
-              <Text style={styles.secondaryButtonText}>REAGENDAR</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.declineButton} onPress={handleRefused}>
-              <Text style={styles.secondaryButtonText}>RECUSAR</Text>
-            </TouchableOpacity>
-          </View>
+        
         </View>
 
         {/* Consultas Anteriores */}
