@@ -11,9 +11,9 @@ import {
   Alert 
 } from 'react-native';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import firebase, { db } from '../../../firebaseConfig';
+import firebase from '../../../firebaseConfig';
 import { router } from 'expo-router';
 
 // Pegar o idCliente com base no idAutenticacao ou seja, do usuário logado
@@ -387,7 +387,6 @@ export default function PreferenciasAtendimentoScreen() {
         </View>
 
         {/* Horários */}
-        {/* Horários - Seção corrigida */}
         <View style={styles.secao}>
           <Text style={styles.secaoTitulo}>Horários</Text>
           <Text style={styles.secaoDescricao}>Defina horários específicos para seu atendimento</Text>

@@ -9,9 +9,12 @@ import {
   ScrollView,
   Alert
 } from 'react-native';
-import firebase from '../../../firebaseConfig'; // Importe sua configuração do Firebase aqui
+import firebase, { auth } from '../../../firebaseConfig'; 
 import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { router } from 'expo-router';
+
+// Pegar o idCliente com base no idAutenticacao ou seja, do usuário logado
+import { useIdCliente } from '@/hooks/useIdCliente';
 
 // Componente de checkbox customizado
 const CustomCheckbox = ({ 
@@ -42,6 +45,8 @@ const RotinaDeCuidados = () => {
   const [usoDeFioDental, setUsoDeFioDental] = useState('');
   const [enxaguante, setEnxaguante] = useState<string[]>([]);
   const [limpezaProfissional, setLimpezaProfissional] = useState('');
+  const userId = auth.currentUser?.uid;
+  const { idCliente, loading: loadingId } = useIdCliente();
 
   // Função para manipular a seleção de checkbox único (radio-like behavior)
   const handleSingleSelection = (setValue: React.Dispatch<React.SetStateAction<string>>, value: string): void => {
@@ -65,6 +70,10 @@ const RotinaDeCuidados = () => {
   const salvarDados = async () => {
     try {
       // Verificar se pelo menos um item foi selecionado em cada categoria
+      if (!idCliente) {
+        Alert.alert('Aguarde', 'Carregando informações do cliente...');
+        return;
+      }
       if (!escovacaoDiaria) {
         Alert.alert('Erro', 'Por favor, selecione uma frequência de escovação diária.');
         return;
@@ -82,8 +91,9 @@ const RotinaDeCuidados = () => {
         return;
       }
 
-      const db = getFirestore(firebase); // Initialize Firestore
+      const db = getFirestore(firebase);
       const rotinaDados = {
+        idCliente,
         escovacaoDiaria,
         usoDeFioDental,
         enxaguante,
@@ -92,7 +102,7 @@ const RotinaDeCuidados = () => {
       };
 
       // Enviar para o Firebase
-      await addDoc(collection(db, 'rotinasDeCuidados'), rotinaDados);
+      await addDoc(collection(db, 't_rotina_cuidado'), rotinaDados);
 
       Alert.alert(
         'Sucesso',
