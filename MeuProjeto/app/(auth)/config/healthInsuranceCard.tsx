@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, StatusBar, ScrollView } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
 import { Ionicons, MaterialIcons, FontAwesome5 } from '@expo/vector-icons';
 import QRCode from 'react-native-qrcode-svg'; // Instalar npm install react-native-qrcode-svg
 import { router } from 'expo-router';
 
-export default function CarteirinhaScreen() {
+// Importar o hook para obter o idCliente que já temos salvo
+import { useIdCliente } from '@/hooks/useIdCliente';
+import { doc, getDoc, getFirestore } from 'firebase/firestore';
+import { auth, db } from "../../../firebaseConfig";
+
+export default function HealthInsuranceCardScreen() {
   const [activeTab, setActiveTab] = useState('frente');
+  const [userData, setUserData] = useState<{
+    nome: string;
+    email: string;
+    nascimento: string;
+    telefone: string;
+    codigo: string;
+    qrCodeData: string;
+    cpf: string;
+  } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  // Obter o idCliente do usuário logado
+  const { idCliente, loading: loadingId } = useIdCliente();
   
+  /*
   const userData = {
     nome: 'MARIA SILVA SANTOS',
     identificacao: '123.456.789-00',
@@ -18,6 +37,69 @@ export default function CarteirinhaScreen() {
     contato: '(11) 98765-4321',
     qrCodeData: 'https://app.odontopremium.com.br/carteira/ODT123456789'
   };
+  */
+
+  // Dados fixos para o plano
+   const planoData = {
+    nome: 'ODONTO PREMIUM',
+    validade: '31/12/2025',
+    emissao: '01/01/2023',
+    qrCodeBase: 'https://app.odontopremium.com.br/carteira/'
+  };
+
+   // Buscar dados do usuário do Firestore
+   useEffect(() => {
+    const fetchUserData = async () => {
+      if (!idCliente) return;
+      
+      try {
+        setLoading(true);
+        const firestore = db;
+        const userDocRef = doc(firestore, 't_usuario', idCliente);
+        const userDoc = await getDoc(userDocRef);
+          
+        if (userDoc.exists()) {
+          const data = userDoc.data();
+          setUserData({
+            nome: data.nome || 'Nome não informado',
+            cpf: data.cpf || 'CPF não informado',
+            email: data.email || 'Email não informado',
+            nascimento: data.dataNascimento || 'Data não informada',
+            telefone: data.telefone || 'Telefone não informado',
+            codigo: idCliente, // Usando o idCliente como código
+            qrCodeData: `${planoData.qrCodeBase}${idCliente}`
+          });
+        } else {
+          console.log('Documento do usuário não encontrado');
+          setUserData({
+            nome: 'USUÁRIO NÃO ENCONTRADO',
+            cpf: 'CPF NÃO ENCONTRADO',
+            email: 'Email não disponível',
+            nascimento: 'Data não disponível',
+            telefone: 'Telefone não disponível',
+            codigo: idCliente,
+            qrCodeData: `${planoData.qrCodeBase}${idCliente}`
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao buscar dados do usuário:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+  }, [idCliente]);
+
+  // Mostrar indicador de carregamento enquanto os dados estão sendo buscados
+  if (loadingId || loading) {
+    return (
+      <SafeAreaView style={[styles.safeArea, styles.loadingContainer]}>
+        <ActivityIndicator size="large" color="#0D6EFD" />
+        <Text style={styles.loadingText}>Carregando carteirinha...</Text>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -70,27 +152,27 @@ export default function CarteirinhaScreen() {
                 
                 <View style={styles.infoContainer}>
                   <Text style={styles.infoLabel}>Nome</Text>
-                  <Text style={styles.infoValue}>{userData.nome}</Text>
+                  <Text style={styles.infoValue}>{userData?.nome || 'Nome não disponível'}</Text>
                   
                   <View style={styles.infoRow}>
                     <View style={styles.infoCol}>
                       <Text style={styles.infoLabel}>CPF</Text>
-                      <Text style={styles.infoValue}>{userData.identificacao}</Text>
+                      <Text style={styles.infoValue}>{userData?.cpf || 'Identificação não disponível'}</Text>
                     </View>
                     <View style={styles.infoCol}>
                       <Text style={styles.infoLabel}>Nascimento</Text>
-                      <Text style={styles.infoValue}>{userData.nascimento}</Text>
+                      <Text style={styles.infoValue}>{userData?.nascimento || 'Data não disponível'}</Text>
                     </View>
                   </View>
                   
                   <View style={styles.infoRow}>
                     <View style={styles.infoCol}>
                       <Text style={styles.infoLabel}>Plano</Text>
-                      <Text style={styles.infoValue}>{userData.plano}</Text>
+                      <Text style={styles.infoValue}>Básico Familiar</Text>
                     </View>
                     <View style={styles.infoCol}>
                       <Text style={styles.infoLabel}>Validade</Text>
-                      <Text style={styles.infoValue}>{userData.validade}</Text>
+                      <Text style={styles.infoValue}>01/12/2025</Text>
                     </View>
                   </View>
                 </View>
@@ -101,7 +183,7 @@ export default function CarteirinhaScreen() {
                 <View style={styles.versoContainer}>
                   <View style={styles.qrCodeContainer}>
                     <QRCode
-                      value={userData.qrCodeData}
+                      value={userData?.qrCodeData || ''}
                       size={120}
                       color="#0D6EFD"
                       backgroundColor="white"
@@ -110,17 +192,17 @@ export default function CarteirinhaScreen() {
                   
                   <View style={styles.codigoContainer}>
                     <Text style={styles.codigoLabel}>Código do Beneficiário</Text>
-                    <Text style={styles.codigoValue}>{userData.codigo}</Text>
+                    <Text style={styles.codigoValue}>{userData?.codigo}</Text>
                   </View>
                   
                   <View style={styles.versoInfoContainer}>
                     <View style={styles.versoInfoItem}>
                       <Text style={styles.versoInfoLabel}>Data de Emissão</Text>
-                      <Text style={styles.versoInfoValue}>{userData.emissao}</Text>
+                      <Text style={styles.versoInfoValue}>25/04/2025</Text>
                     </View>
                     <View style={styles.versoInfoItem}>
                       <Text style={styles.versoInfoLabel}>Contato</Text>
-                      <Text style={styles.versoInfoValue}>{userData.contato}</Text>
+                      <Text style={styles.versoInfoValue}>{userData?.telefone}</Text>
                     </View>
                   </View>
                   
@@ -167,6 +249,15 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#F5F7FA',
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#0D6EFD',
   },
   header: {
     flexDirection: 'row',

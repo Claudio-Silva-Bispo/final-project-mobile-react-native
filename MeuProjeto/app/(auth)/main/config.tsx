@@ -193,7 +193,7 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<CardIcon />} 
           title="Carteirinha"
-          onPress={() => router.push('/(auth)/config/carteirinha')}
+          onPress={() => router.push('/(auth)/config/healthInsuranceCard')}
         />
         
         <ConfigMenuItem 
