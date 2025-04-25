@@ -169,6 +169,20 @@ export default function ConfigScreen() {
           title="Seus dados"
           onPress={() => router.push('/(auth)/config/clienteDetails')}
         />
+
+        <ConfigMenuItem 
+          icon={<PreferenceIcon />} 
+          title="Preferência de Atendimento"
+          onPress={() => router.push('/(auth)/config/preference')}
+        />
+
+        {/* Uncomment if needed 
+        <ConfigMenuItem 
+          icon={<PreferenceIcon />} 
+          title="Preferência de Atendimento"
+          onPress={() => console.log('Preferência de Atendimento')}
+        />
+        */}
         
         <ConfigMenuItem 
           icon={<FamilyIcon />} 
@@ -188,11 +202,7 @@ export default function ConfigScreen() {
           onPress={() => router.push('/(auth)/login/redefinir-senha')}
         />
         
-        <ConfigMenuItem 
-          icon={<PreferenceIcon />} 
-          title="Preferência de Atendimento"
-          onPress={() => console.log('Preferência de Atendimento')}
-        />
+       
         
         <ConfigMenuItem 
           icon={<PaymentIcon />} 
@@ -200,17 +210,9 @@ export default function ConfigScreen() {
           onPress={() => router.push('/(auth)/config/formaPagamento')}
         />
         
-        <ConfigMenuItem 
-          icon={<SettingsIcon />} 
-          title="Preferências"
-          onPress={() => router.push('/(auth)/config/preference')}
-        />
         
-        <ConfigMenuItem 
-          icon={<PrivacyIcon />} 
-          title="Política de Privacidade"
-          onPress={() => router.push('/(auth)/config/privacyPolicy')}
-        />
+        
+        
         
         <ConfigMenuItem 
           icon={<DentalIcon />} 
@@ -252,6 +254,12 @@ export default function ConfigScreen() {
           icon={<SettingsIcon />} 
           title="Vídeos"
           onPress={() => router.push('/(auth)/config/videoDoctorFake')}
+        />
+
+      <ConfigMenuItem 
+          icon={<PrivacyIcon />} 
+          title="Política de Privacidade"
+          onPress={() => router.push('/(auth)/config/privacyPolicy')}
         />
         
         <ConfigMenuItem 

@@ -20,8 +20,10 @@ import { useUserData } from '../../../hooks/useUserData';
 import { useIdCliente } from '@/hooks/useIdCliente';
 
 // Verificar progresso de preenchimento das bases de dados
-import { verificarProgressoCliente } from '@/hooks/useVerificarProgressoCliente';
 import { verificarCamposPendentes } from '@/utils/verificarCamposPendentes';
+
+// Importa a função askYesNo -- Para coletar respostas sim/não
+import { askYesNo } from '@/utils/askYesNo';
 
 // Componente para as mensagens individuais
 interface Message {
@@ -68,14 +70,14 @@ export default function ChatbotScreen() {
     if (userName && !loadingUser) {
       const firstMessage = {
         id: Date.now().toString(),
-        text: `Olá ${userName}! Sou o Delfos, como posso ajudar você hoje?`,
+        text: `Olá ${userName}! Sou o Delfos, espero qeu esteja bem!`,
         time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         isUser: false,
       };
       setMessages([firstMessage]); 
 
       // Enviar a mensagem de boas-vindas
-      setMessages([firstMessage]); 
+      //setMessages([firstMessage]); 
 
       // Aqui podemos enviar a lista de tabelas a serem preenchidas
       const tabelas = [
@@ -87,6 +89,7 @@ export default function ChatbotScreen() {
         't_turno_preferencia_usuario',
       ];
 
+      /*
       const tabelaMessage = {
         id: (Date.now() + 1).toString(),
         text: `As seguintes tabelas precisam ser preenchidas: ${tabelas.join(', ')}`,
@@ -95,14 +98,6 @@ export default function ChatbotScreen() {
       };
 
       setMessages(prevMessages => [...prevMessages, tabelaMessage]);
-
-      /*
-      // Verificar progresso do cliente
-      if (idCliente) {
-        verificarProgressoCliente(idCliente, userName, setMessages);
-      } else {
-        console.error("ID do cliente não encontrado");
-      }
       */
 
       // Verificar progresso do cliente
@@ -112,7 +107,7 @@ export default function ChatbotScreen() {
           if (tabelasPendentes.length > 0) {
             const camposPendentesMessage = {
               id: (Date.now() + 2).toString(),
-              text: `Os seguintes campos ainda precisam ser preenchidos: ${tabelasPendentes.join(', ')}`,
+              text: `Meu objetivo é te ajudar a cuidar melhor da sua saúde com consultas preventivas. Para isso, precisamos atualizar juntos algumas informações. Vamos nessa?`, /*/*${tabelasPendentes.join(', ')}*/
               time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
               isUser: false,
             };

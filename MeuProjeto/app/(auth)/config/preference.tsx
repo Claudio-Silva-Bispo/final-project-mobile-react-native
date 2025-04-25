@@ -11,19 +11,41 @@ import {
   Alert 
 } from 'react-native';
 import { Ionicons, MaterialIcons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
-import firebase from '../../../firebaseConfig';
+import firebase, { db } from '../../../firebaseConfig';
 import { router } from 'expo-router';
+
+// Pegar o idCliente com base no idAutenticacao ou seja, do usuário logado
+import { useIdCliente } from '@/hooks/useIdCliente';
 
 export default function PreferenciasAtendimentoScreen() {
   const auth = getAuth(firebase);
   const firestore = getFirestore(firebase);
   const userId = auth.currentUser?.uid;
+  const { idCliente, loading: loadingId } = useIdCliente();
+
 
   // Estados para cada preferência
   const [diaSelecionado, setDiaSelecionado] = useState<string | null>(null);
   const [turnoSelecionado, setTurnoSelecionado] = useState<string | null>(null);
+  const [horarioAtivo, setHorarioAtivo] = useState(false);
+  const [faixaHorario, setFaixaHorario] = useState({
+    '08:00': false,
+    '09:00': false,
+    '10:00': false,
+    '11:00': false,
+    '12:00': false,
+    '13:00': false,
+    '14:00': false,
+    '15:00': false,
+    '16:00': false,
+    '17:00': false,
+    '18:00': false,
+    '19:00': false,
+    '20:00': false
+  });
+  
   const [tipoAtendimentoSelecionado, setTipoAtendimentoSelecionado] = useState<string | null>(null);
   const [acessibilidadeSelecionada, setAcessibilidadeSelecionada] = useState<string | null>(null);
   const [receberNotificacoes, setReceberNotificacoes] = useState(false);
@@ -66,36 +88,59 @@ export default function PreferenciasAtendimentoScreen() {
 
   // Carregar preferências existentes
   useEffect(() => {
-    if (!userId) return;
-
-    const carregarPreferencias = async () => {
-      try {
-        // Carregar dia
-        const diaDoc = await getDoc(doc(firestore, 't_preferencia_dia', userId));
-        if (diaDoc.exists()) {
-          setDiaSelecionado(diaDoc.data().preferencia);
-        }
-
-        // Carregar turno
-        const turnoDoc = await getDoc(doc(firestore, 't_preferencia_turno', userId));
-        if (turnoDoc.exists()) {
-          setTurnoSelecionado(turnoDoc.data().preferencia);
-        }
+      if (!userId) return;
+  
+      const carregarPreferencias = async () => {
+        try {
+          // Carregar dia
+          const diaDoc = await getDoc(doc(firestore, 't_dia_preferencia_usuario', userId));
+          if (diaDoc.exists()) {
+            setDiaSelecionado(diaDoc.data().preferencia);
+          }
+  
+          // Carregar turno
+          const turnoDoc = await getDoc(doc(firestore, 't_turno_preferencia_usuario', userId));
+          if (turnoDoc.exists()) {
+            setTurnoSelecionado(turnoDoc.data().preferencia);
+          }
+  
+          // Carregar horários
+          const horarioDoc = await getDoc(doc(firestore, 't_horario_preferencia_usuario', userId));
+          if (horarioDoc.exists()) {
+            setHorarioAtivo(horarioDoc.data().ativo);
+            setFaixaHorario(horarioDoc.data().horarios || {
+              opcaoUm: false,
+              opcaoDois: false,
+              opcaoTres: false,
+              opcaoQuatro: false,
+              opcaoCinco: false,
+              opcaoSeis: false,
+              opcaoSete: false,
+              opcaoOito: false,
+              opcaoNove: false,
+              opcaoDez: false,
+              opcaoOnze: false,
+              opcaoDoze: false,
+              opcaoTreze: false,
+              opcaoQuatorze: false
+            });
+          }
+        
 
         // Carregar tipo de atendimento
-        const tipoDoc = await getDoc(doc(firestore, 't_preferencia_tipo_atendimento', userId));
+        const tipoDoc = await getDoc(doc(firestore, 't_tipo_atendimento_preferencia_usuario', userId));
         if (tipoDoc.exists()) {
           setTipoAtendimentoSelecionado(tipoDoc.data().preferencia);
         }
 
         // Carregar acessibilidade
-        const acessibilidadeDoc = await getDoc(doc(firestore, 't_preferencia_acessibilidade', userId));
+        const acessibilidadeDoc = await getDoc(doc(firestore, 't_acessibilidade_preferencia', userId));
         if (acessibilidadeDoc.exists()) {
           setAcessibilidadeSelecionada(acessibilidadeDoc.data().preferencia);
         }
 
         // Carregar notificações
-        const notifDoc = await getDoc(doc(firestore, 't_preferencia_notificacao', userId));
+        const notifDoc = await getDoc(doc(firestore, 't_notificacao_preferencia', userId));
         if (notifDoc.exists()) {
           setReceberNotificacoes(notifDoc.data().ativo);
           setCanaisNotificacao(notifDoc.data().canais || {
@@ -105,6 +150,7 @@ export default function PreferenciasAtendimentoScreen() {
             push: false
           });
         }
+
       } catch (error) {
         console.error("Erro ao carregar preferências:", error);
         Alert.alert("Erro", "Não foi possível carregar suas preferências.");
@@ -119,8 +165,10 @@ export default function PreferenciasAtendimentoScreen() {
     if (!userId || !diaSelecionado) return;
     
     try {
-      await setDoc(doc(firestore, 't_preferencia_dia', userId), {
+      await setDoc(doc(firestore, 't_dia_preferencia_usuario', userId), {
         preferencia: diaSelecionado,
+        idAutenticacao: userId,
+        idCliente: idCliente,
         dataAtualizacao: new Date().toISOString()
       });
       Alert.alert("Sucesso", "Preferência de dia salva com sucesso!");
@@ -134,8 +182,10 @@ export default function PreferenciasAtendimentoScreen() {
     if (!userId || !turnoSelecionado) return;
     
     try {
-      await setDoc(doc(firestore, 't_preferencia_turno', userId), {
+      await setDoc(doc(firestore, 't_turno_preferencia_usuario', userId), {
         preferencia: turnoSelecionado,
+        idAutenticacao: userId,
+        idCliente: idCliente,
         dataAtualizacao: new Date().toISOString()
       });
       Alert.alert("Sucesso", "Preferência de turno salva com sucesso!");
@@ -145,12 +195,33 @@ export default function PreferenciasAtendimentoScreen() {
     }
   };
 
+   // Função para salvar preferências de horário
+   const salvarPreferenciaHorario = async () => {
+    if (!userId) return;
+    
+    try {
+      await setDoc(doc(firestore, 't_horario_preferencia_usuario', userId), {
+        ativo: horarioAtivo,
+        idAutenticacao: userId,
+        idCliente: idCliente,
+        faixas: faixaHorario,
+        dataAtualizacao: new Date().toISOString()
+      });
+      Alert.alert("Sucesso", "Preferências de horário salvas com sucesso!");
+    } catch (error) {
+      console.error("Erro ao salvar preferências de horários:", error);
+      Alert.alert("Erro", "Não foi possível salvar suas preferências de horários.");
+    }
+  };
+
   const salvarPreferenciaTipoAtendimento = async () => {
     if (!userId || !tipoAtendimentoSelecionado) return;
     
     try {
-      await setDoc(doc(firestore, 't_preferencia_tipo_atendimento', userId), {
+      await setDoc(doc(firestore, 't_tipo_atendimento_preferencia_usuario', userId), {
         preferencia: tipoAtendimentoSelecionado,
+        idAutenticacao: userId,
+        idCliente: idCliente,
         dataAtualizacao: new Date().toISOString()
       });
       Alert.alert("Sucesso", "Preferência de tipo de atendimento salva com sucesso!");
@@ -164,8 +235,10 @@ export default function PreferenciasAtendimentoScreen() {
     if (!userId || !acessibilidadeSelecionada) return;
     
     try {
-      await setDoc(doc(firestore, 't_preferencia_acessibilidade', userId), {
+      await setDoc(doc(firestore, 't_acessibilidade_preferencia', userId), {
         preferencia: acessibilidadeSelecionada,
+        idAutenticacao: userId,
+        idCliente: idCliente,
         dataAtualizacao: new Date().toISOString()
       });
       Alert.alert("Sucesso", "Preferência de acessibilidade salva com sucesso!");
@@ -179,8 +252,10 @@ export default function PreferenciasAtendimentoScreen() {
     if (!userId) return;
     
     try {
-      await setDoc(doc(firestore, 't_preferencia_notificacao', userId), {
+      await setDoc(doc(firestore, 't_notificacao_preferencia', userId), {
         ativo: receberNotificacoes,
+        idAutenticacao: userId,
+        idCliente: idCliente,
         canais: canaisNotificacao,
         dataAtualizacao: new Date().toISOString()
       });
@@ -197,6 +272,14 @@ export default function PreferenciasAtendimentoScreen() {
       ...prev,
       [canal]: !prev[canal]
     }));
+  };
+
+  // Alternar faixas de horários
+  const toggleFaixaHorarios = (horario: keyof typeof faixaHorario) => {
+      setFaixaHorario(prev => ({
+        ...prev,
+        [horario]: !prev[horario]
+      }));
   };
 
   return (
@@ -216,6 +299,7 @@ export default function PreferenciasAtendimentoScreen() {
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        
         {/* Dias da Semana */}
         <View style={styles.secao}>
           <Text style={styles.secaoTitulo}>Dia de Preferência</Text>
@@ -299,6 +383,59 @@ export default function PreferenciasAtendimentoScreen() {
             disabled={!turnoSelecionado}
           >
             <Text style={styles.botaoSalvarTexto}>Salvar Preferência de Turno</Text>
+          </TouchableOpacity>
+        </View>
+
+        {/* Horários */}
+        {/* Horários - Seção corrigida */}
+        <View style={styles.secao}>
+          <Text style={styles.secaoTitulo}>Horários</Text>
+          <Text style={styles.secaoDescricao}>Defina horários específicos para seu atendimento</Text>
+          
+          <View style={styles.notificacaoSwitch}>
+            <Text style={styles.notificacaoTexto}>Deseja definir?</Text>
+            <Switch
+              trackColor={{ false: "#dddddd", true: "#a0c4ff" }}
+              thumbColor={horarioAtivo ? "#0D6EFD" : "#f4f3f4"}
+              onValueChange={() => setHorarioAtivo(prev => !prev)}
+              value={horarioAtivo}
+            />
+          </View>
+          
+          {horarioAtivo && (
+            <View style={styles.horariosContainer}>
+              <Text style={styles.horariosTexto}>Selecione os horários disponíveis:</Text>
+              
+              <View style={styles.horariosGrid}>
+                {Object.keys(faixaHorario).map((hora) => (
+                  <TouchableOpacity 
+                    key={hora}
+                    style={[
+                      styles.horarioItem,
+                      faixaHorario[hora as keyof typeof faixaHorario] && styles.horarioSelecionado
+                    ]}
+                    onPress={() => toggleFaixaHorarios(hora as keyof typeof faixaHorario)}
+                  >
+                    <Text style={[
+                      styles.horarioTexto,
+                      faixaHorario[hora as keyof typeof faixaHorario] && styles.horarioTextoSelecionado
+                    ]}>
+                      {hora}
+                    </Text>
+                    {faixaHorario[hora as keyof typeof faixaHorario] && (
+                      <Ionicons name="checkmark-circle" size={16} color="#0D6EFD" />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+          
+          <TouchableOpacity 
+            style={styles.botaoSalvar}
+            onPress={salvarPreferenciaHorario}
+          >
+            <Text style={styles.botaoSalvarTexto}>Salvar Preferências de Horário</Text>
           </TouchableOpacity>
         </View>
 
@@ -514,6 +651,7 @@ export default function PreferenciasAtendimentoScreen() {
             <Text style={styles.botaoSalvarTexto}>Salvar Preferências de Notificação</Text>
           </TouchableOpacity>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -660,6 +798,47 @@ const styles = StyleSheet.create({
   turnoHorarioSelecionado: {
     color: '#3479E1',
   },
+
+  // Estilos novos para os horários
+  horariosContainer: {
+    marginBottom: 20,
+  },
+  horariosTexto: {
+    fontSize: 16,
+    color: '#333333',
+    marginBottom: 12,
+  },
+  horariosGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  horarioItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    width: '48%',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#F5F7FA',
+    borderRadius: 8,
+    marginBottom: 8,
+    borderWidth: 1,
+    borderColor: '#EEEEEE',
+  },
+  horarioSelecionado: {
+    backgroundColor: '#E6F0FF',
+    borderColor: '#0D6EFD',
+  },
+  horarioTexto: {
+    fontSize: 16,
+    color: '#333333',
+  },
+  horarioTextoSelecionado: {
+    color: '#0D6EFD',
+    fontWeight: '600',
+  },
+
   tiposContainer: {
     marginBottom: 20,
   },
