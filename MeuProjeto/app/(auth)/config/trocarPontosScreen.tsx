@@ -1,16 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity, Alert, Dimensions } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import Modal from 'react-native-modal';
 import firebase, { auth } from '../../../firebaseConfig';
-import { doc, getDoc, updateDoc, onSnapshot, increment, getFirestore, collection } from 'firebase/firestore';
+import { doc, getDoc, updateDoc, onSnapshot, increment, getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { router } from 'expo-router';
+import { useIdCliente } from '@/hooks/useIdCliente';
 
 const firestore = getFirestore(firebase);
+const { width } = Dimensions.get('window');
 
-const userId = auth.currentUser?.uid;
-
-
+const atividades = [
+  { nome: 'Completar o cadastro pessoal', tabela: 't_usuario', pontos: 20 },
+  { nome: 'Cadastrar endereço de residência', tabela: 't_endereco_residencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar endereço de preferência', tabela: 't_endereco_preferencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar dia de preferência', tabela: 't_dia_preferencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar turno de preferência', tabela: 't_turno_preferencia_usuario', pontos: 20 },
+  { nome: 'Responder um feedback', tabela: 't_feedback', pontos: 50 },
+  { nome: 'Realizar uma consulta sugerida', tabela: 't_consultas', pontos: 100 },
+  { nome: 'Assistir três vídeos preventivos', tabela: 't_videos', pontos: 10 },
+];
 
 const beneficios = [
   {
@@ -37,59 +46,85 @@ const beneficios = [
 ];
 
 export default function TrocarPontosScreen() {
-  const [pontosUsuario, setPontosUsuario] = useState(0);
   const [modalVisible, setModalVisible] = useState(false);
   const [beneficioSelecionado, setBeneficioSelecionado] = useState<any>(null);
+  const [atividadesConcluidas, setAtividadesConcluidas] = useState<string[]>([]);
+  const [pontosTotais, setPontosTotais] = useState(0);
+  const { idCliente, loading: loadingId } = useIdCliente();
 
-  const userId = auth.currentUser?.uid;
-
+  // Calcular pontos com base nas atividades concluídas
   useEffect(() => {
-    if (!userId) return;
-  
-    const unsubscribe = onSnapshot(doc(firestore, 'usuarios', userId), (docSnap) => {
-      if (docSnap.exists()) {
-        const data = docSnap.data();
-        if (data?.pontos !== undefined) {
-          setPontosUsuario(data.pontos);
+    const carregarStatus = async () => {
+      if (!idCliente || loadingId) return;
+      
+      const concluídas: string[] = [];
+      let pontos = 0;
+
+      // Verificar cada atividade usando queries para encontrar documentos com o idCliente
+      for (const atividade of atividades) {
+        const colecaoRef = collection(firestore, atividade.tabela);
+        const q = query(colecaoRef, where("idCliente", "==", idCliente));
+        
+        try {
+          const querySnapshot = await getDocs(q);
+          
+          // Se encontrou pelo menos um documento com este idCliente, considera a atividade concluída
+          if (!querySnapshot.empty) {
+            concluídas.push(atividade.nome);
+            pontos += atividade.pontos;
+          }
+        } catch (error) {
+          console.error(`Erro ao verificar atividade ${atividade.nome}:`, error);
         }
       }
-    });
-  
-    return () => unsubscribe();
-  }, [userId]);
 
-  // Buscar pontos do Firestore
-  useEffect(() => {
-    if (!userId) return;
+      setAtividadesConcluidas(concluídas);
+      setPontosTotais(pontos);
+    };
 
-    const unsubscribe = onSnapshot(doc(collection(firestore, 't_usuario'), userId), (docSnap) => {
-        const data = docSnap.data();
-        if (data?.pontos !== undefined) {
-          setPontosUsuario(data.pontos);
-        }
-    });
-
-    return () => unsubscribe();
-  }, [userId]);
+    carregarStatus();
+  }, [idCliente, loadingId]);
 
   const confirmarTroca = async () => {
-    if (!userId || !beneficioSelecionado) return;
+    if (!idCliente || !beneficioSelecionado) return;
 
     const custo = beneficioSelecionado.pontos;
 
-    if (pontosUsuario < custo) {
+    if (pontosTotais < custo) {
       Alert.alert('Pontos insuficientes', 'Você não tem pontos suficientes para esta troca.');
       return;
     }
 
     try {
-      await updateDoc(doc(collection(firestore, 't_usuario'), userId), {
-        pontos: increment(-custo),
-      });
+      // Atualizar os pontos no documento do usuário
+      // Assumindo que você tem uma tabela especial para armazenar os pontos do usuário
+      const userRef = doc(firestore, 't_usuario', idCliente);
+      
+      // Verificar se o documento existe
+      const docSnap = await getDoc(userRef);
+      
+      if (docSnap.exists()) {
+        // Atualizar documento existente com decremento de pontos
+        await updateDoc(userRef, {
+          pontos: increment(-custo),
+        });
+      } else {
+        console.error("Documento do usuário não encontrado");
+        Alert.alert('Erro', 'Não foi possível encontrar seus dados. Por favor, tente novamente mais tarde.');
+        return;
+      }
 
+      // Registrar a troca de pontos
+      // Você pode adicionar um novo documento em uma coleção 't_trocas_pontos' se quiser
+      
       setModalVisible(false);
       Alert.alert('Sucesso!', `Você trocou seus pontos por: ${beneficioSelecionado.titulo}`);
+      
+      // Atualizar os pontos após a troca
+      setPontosTotais(pontosTotais - custo);
+      
     } catch (error) {
+      console.error("Erro ao trocar pontos:", error);
       Alert.alert('Erro', 'Houve um problema ao processar a troca. Tente novamente.');
     }
   };
@@ -103,8 +138,8 @@ export default function TrocarPontosScreen() {
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity>
-          <Ionicons name="arrow-back" size={32} color="#005DFF" onPress={() => router.back()}/>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="arrow-back" size={32} color="#005DFF" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Trocar Pontos</Text>
         <Feather name="gift" size={22} color="#005DFF" />
@@ -112,7 +147,7 @@ export default function TrocarPontosScreen() {
 
       {/* Pontos */}
       <View style={styles.cardPontos}>
-        <Text style={styles.pontosLabel}>Pontos: <Text style={styles.pontos}>{pontosUsuario} pontos</Text></Text>
+        <Text style={styles.pontosLabel}>Pontos: <Text style={styles.pontos}>{pontosTotais} pontos</Text></Text>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -128,10 +163,16 @@ export default function TrocarPontosScreen() {
               <Text style={styles.pontosRequisito}>{beneficio.pontos}pts</Text>
               <Text style={styles.descricao}>{beneficio.descricao}</Text>
               <TouchableOpacity
-                style={styles.botaoTrocar}
+                style={[
+                  styles.botaoTrocar,
+                  pontosTotais < beneficio.pontos && styles.botaoDesabilitado
+                ]}
                 onPress={() => abrirModal(beneficio)}
+                disabled={pontosTotais < beneficio.pontos}
               >
-                <Text style={styles.botaoTexto}>Trocar</Text>
+                <Text style={styles.botaoTexto}>
+                  {pontosTotais < beneficio.pontos ? 'Pontos insuficientes' : 'Trocar'}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -159,126 +200,124 @@ export default function TrocarPontosScreen() {
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-        padding: 16,
-        paddingTop: 50,
-      },
-      header: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 16,
-        paddingTop: 40
-      },
-      headerTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#005DFF',
-      },
-      cardPontos: {
-        backgroundColor: '#005DFF',
-        borderRadius: 10,
-        padding: 12,
-        marginBottom: 20,
-      },
-      pontosLabel: {
-        fontSize: 16,
-        color: '#fff',
-      },
-      pontos: {
-        fontWeight: 'bold',
-      },
-      title: {
-        fontWeight: 'bold',
-        fontSize: 16,
-        marginBottom: 4,
-        color: '#001C55',
-      },
-      subtitle: {
-        fontSize: 14,
-        color: '#444',
-        marginBottom: 16,
-      },
-      section: {
-        fontSize: 16,
-        fontWeight: 'bold',
-        marginBottom: 12,
-        color: '#001C55',
-      },
-      card: {
-        backgroundColor: '#005DFF',
-        borderRadius: 12,
-        overflow: 'hidden',
-        marginBottom: 16,
-      },
-      imagem: {
-        width: '100%',
-        height: 120,
-        resizeMode: 'cover',
-      },
-      cardContent: {
-        padding: 12,
-      },
-      beneficioTitulo: {
-        color: '#fff',
-        fontSize: 16,
-        fontWeight: 'bold',
-      },
-      pontosRequisito: {
-        color: '#FF4D4D',
-        fontSize: 14,
-        marginVertical: 4,
-      },
-      descricao: {
-        color: '#fff',
-        fontSize: 13,
-      },
-    botaoTrocar: {
-        marginTop: 10,
-        backgroundColor: '#fff',
-        paddingVertical: 8,
-        paddingHorizontal: 20,
-        borderRadius: 20,
-        alignSelf: 'flex-start',
-    },
-    botaoTexto: {
-        color: '#005DFF',
-        fontWeight: 'bold',
-    },
-    modalContent: {
-        backgroundColor: '#fff',
-        padding: 20,
-        borderRadius: 12,
-    },
-    modalTexto: {
-        fontSize: 16,
-        color: '#333',
-        marginBottom: 10,
-    },
-    modalTitulo: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: '#005DFF',
-        textAlign: 'center',
-        marginBottom: 20,
-    },
-    modalBotoes: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    btnCancelar: {
-        padding: 10,
-    },
-    btnConfirmar: {
-        backgroundColor: '#005DFF',
-        padding: 10,
-        borderRadius: 8,
-    },
-  
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    padding: 16,
+    paddingTop: 50,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+    paddingTop: 40
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#005DFF',
+  },
+  cardPontos: {
+    backgroundColor: '#005DFF',
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 20,
+  },
+  pontosLabel: {
+    fontSize: 16,
+    color: '#fff',
+  },
+  pontos: {
+    fontWeight: 'bold',
+  },
+  title: {
+    fontWeight: 'bold',
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#001C55',
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#444',
+    marginBottom: 16,
+  },
+  section: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#001C55',
+  },
+  card: {
+    backgroundColor: '#005DFF',
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  imagem: {
+    width: '100%',
+    height: 120,
+    resizeMode: 'cover',
+  },
+  cardContent: {
+    padding: 12,
+  },
+  beneficioTitulo: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  pontosRequisito: {
+    color: '#FF4D4D',
+    fontSize: 14,
+    marginVertical: 4,
+  },
+  descricao: {
+    color: '#fff',
+    fontSize: 13,
+  },
+  botaoTrocar: {
+    marginTop: 10,
+    backgroundColor: '#fff',
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+    alignSelf: 'flex-start',
+  },
+  botaoDesabilitado: {
+    backgroundColor: '#ccc',
+  },
+  botaoTexto: {
+    color: '#005DFF',
+    fontWeight: 'bold',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 12,
+  },
+  modalTexto: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 10,
+  },
+  modalTitulo: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#005DFF',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  modalBotoes: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  btnCancelar: {
+    padding: 10,
+  },
+  btnConfirmar: {
+    backgroundColor: '#005DFF',
+    padding: 10,
+    borderRadius: 8,
+  },
 });
-function setPontosUsuario(pontos: any) {
-    throw new Error('Function not implemented.');
-}
-

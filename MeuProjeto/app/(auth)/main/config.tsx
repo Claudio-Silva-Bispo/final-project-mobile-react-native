@@ -141,6 +141,9 @@ const LogoutIcon = () => (
   </View>
 );
 
+
+
+
 export default function ConfigScreen() {
   return (
     <SafeAreaView style={styles.container}>
@@ -265,7 +268,7 @@ export default function ConfigScreen() {
         <ConfigMenuItem 
           icon={<LogoutIcon />} 
           title="Sair"
-          onPress={() => router.push('/main/inicio')}
+          onPress={() => router.push('/')}
         />
       </ScrollView>
     </SafeAreaView>
@@ -328,6 +331,8 @@ const styles = StyleSheet.create({
   },
   menuContainer: {
     flex: 1,
+    paddingTop: 10,
+    marginBottom: 50
   },
   menuItem: {
     flexDirection: 'row',

@@ -1,44 +1,53 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { getFirestore, collection, query, where, getDocs } from 'firebase/firestore';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+// Pegar o idCliente com base no idAutenticacao ou seja, do usuário logado
+import { useIdCliente } from '@/hooks/useIdCliente';
 
 const { width } = Dimensions.get('window');
 
 const atividades = [
-  { nome: 'Completar o cadastro pessoal', tabela: 't_dados_pessoais_clientes', pontos: 20 },
-  { nome: 'Cadastrar endereço de residência', tabela: 't_endereco_residencia_cliente', pontos: 20 },
-  { nome: 'Cadastrar endereço de preferência', tabela: 't_endereco_preferencia_cliente', pontos: 20 },
-  { nome: 'Cadastrar dia de preferência', tabela: 't_dia_preferencia_cliente', pontos: 20 },
-  { nome: 'Cadastrar turno de preferência', tabela: 't_turno_preferencia_cliente', pontos: 20 },
-  { nome: 'Responder um feedback', tabela: 't_resposta_feedback_cliente', pontos: 50 },
-  { nome: 'Realizar uma consulta sugerida', tabela: 't_consulta_realizada_cliente', pontos: 100 },
-  { nome: 'Assistir três vídeos preventivos', tabela: 't_videos_assistidos_cliente', pontos: 10 },
+  { nome: 'Completar o cadastro pessoal', tabela: 't_usuario', pontos: 20 },
+  { nome: 'Cadastrar endereço de residência', tabela: 't_endereco_residencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar endereço de preferência', tabela: 't_endereco_preferencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar dia de preferência', tabela: 't_dia_preferencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar turno de preferência', tabela: 't_turno_preferencia_usuario', pontos: 20 },
+  { nome: 'Responder um feedback', tabela: 't_feedback', pontos: 50 },
+  { nome: 'Realizar uma consulta sugerida', tabela: 't_consultas', pontos: 300 },
+  { nome: 'Assistir três vídeos preventivos', tabela: 't_videos', pontos: 200 },
 ];
 
 export default function BenefictsProgram() {
   const [atividadesConcluidas, setAtividadesConcluidas] = useState<string[]>([]);
   const [pontosTotais, setPontosTotais] = useState(0);
+  const { idCliente, loading: loadingId } = useIdCliente();
 
   useEffect(() => {
     const carregarStatus = async () => {
-      const auth = getAuth();
+      if (!idCliente || loadingId) return;
+      
       const firestore = getFirestore();
-      const userId = auth.currentUser?.uid;
-
-      if (!userId) return;
-
       const concluídas: string[] = [];
       let pontos = 0;
 
+      // Verificar cada atividade usando queries para encontrar documentos com o idCliente
       for (const atividade of atividades) {
-        const ref = doc(firestore, atividade.tabela, userId);
-        const snap = await getDoc(ref);
-        if (snap.exists()) {
-          concluídas.push(atividade.nome);
-          pontos += atividade.pontos;
+        const colecaoRef = collection(firestore, atividade.tabela);
+        const q = query(colecaoRef, where("idCliente", "==", idCliente));
+        
+        try {
+          const querySnapshot = await getDocs(q);
+          
+          // Se encontrou pelo menos um documento com este idCliente, considera a atividade concluída
+          if (!querySnapshot.empty) {
+            concluídas.push(atividade.nome);
+            pontos += atividade.pontos;
+          }
+        } catch (error) {
+          console.error(`Erro ao verificar atividade ${atividade.nome}:`, error);
         }
       }
 
@@ -47,14 +56,14 @@ export default function BenefictsProgram() {
     };
 
     carregarStatus();
-  }, []);
+  }, [idCliente, loadingId]);
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 30 }}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={32} color="#005DFF" onPress={() => router.back()}/>
+          <Ionicons name="arrow-back" size={32} color="#005DFF" />
         </TouchableOpacity>
         <Text style={styles.title}>Recompensas</Text>
         <Text style={styles.gift}>🎁</Text>
@@ -67,7 +76,7 @@ export default function BenefictsProgram() {
         <Text style={styles.pointsDesc}>
           Complete atividades e acumule pontos para trocar por recompensas exclusivas!
         </Text>
-        <TouchableOpacity style={styles.exchangeBtn} onPress={()=> router.push('/(auth)/config/trocarPontosScreen')}>
+        <TouchableOpacity style={styles.exchangeBtn} onPress={() => router.push('/(auth)/config/trocarPontosScreen')}>
           <Text style={styles.exchangeText}>trocar pontos</Text>
         </TouchableOpacity>
       </View>
