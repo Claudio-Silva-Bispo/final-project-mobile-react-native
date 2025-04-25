@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { 
   View, 
   Text, 
@@ -7,26 +7,94 @@ import {
   StyleSheet, 
   Alert 
 } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams, useFocusEffect } from 'expo-router';
 import { useIdCliente } from '@/hooks/useIdCliente';
-import { getFirestore, collection, doc, updateDoc, addDoc, Timestamp, query, where, getDocs } from 'firebase/firestore';
+import { getFirestore, collection, doc, updateDoc, addDoc, Timestamp, query, where, getDocs, getDoc } from 'firebase/firestore';
 import firebase from '../../../firebaseConfig';
 
 export default function AceiteConsultaScreen() {
   const { idCliente } = useIdCliente();
   const db = getFirestore(firebase);
   const [consulta, setConsulta] = useState<any | null>(null);
+  const [clinica, setClinica] = useState<any | null>(null);
+
+  // useFocusEffect roda toda vez que a tela recebe foco
+  /*
+  useFocusEffect(
+    useCallback(() => {
+      if (idCliente) {
+        handleAceitarConsulta();
+      }
+      return () => {};
+    }, [idCliente])
+  );
+  */
 
   // Recupera os dados da consulta passados via rota
   const { 
-    consultaId,   // Id do documento da sugestão que será atualizado
-    data,         // Data da consulta (ex: "01/04/2025")
-    horario,      // Horário (ex: "08:00")
-    clinicaId,    // Id da clínica, para depois buscar mais dados, se necessário
-    turno,        // Turno (ex: "Tarde")
-    dentista,     // Nome do dentista (ex: "Dra. Leticia Almeida")
-    especialidade // Especialidade (ex: "Limpeza")
+    consultaId,  
+    data,         
+    horario,     
+    turno,       
+    dentista,     
+    especialidade,
+    clinicaId 
   } = useLocalSearchParams();
+
+  // Função para carregar os dados da clínica
+  const carregarDadosClinica = async () => {
+    try {
+
+      console.log('Consultando os dados da clinica...');
+      console.log('idCliente para pesquisa dos dados...', idCliente);
+
+      // 1. Procurar a tabela para inserir o aceite do cliente
+      const sugestaoRef = collection(db, 't_sugestao_consulta_clinica');
+      const qSugestao = query(sugestaoRef, where('status', '==', 'aceita'), where('idCliente', '==', idCliente));
+      const sugestaoSnapshot = await getDocs(qSugestao); 
+
+      if (sugestaoSnapshot.empty) {
+        throw new Error('Nenhuma sugestão encontrada para o cliente.');
+      }
+      
+      // Pegando o primeiro documento da consulta
+      const sugestaoDoc = sugestaoSnapshot.docs[0];
+      const sugestaoData = sugestaoDoc.data();
+
+      // Extraindo o clinicaId dos dados da sugestão
+      const { clinicaId } = sugestaoData;
+      console.log('idClinica para pesquisa dos dados...', clinicaId);
+
+      if (typeof clinicaId !== 'string') {
+        throw new Error('Invalid clinicaId: Expected a string.');
+      }
+
+      // 2. Buscar os dados da clínica na coleção t_clinica usando o clinicaId extraído
+      const clinicaRef = doc(db, 't_clinica', clinicaId);
+      const clinicaSnap = await getDoc(clinicaRef);
+      const clinicaData = clinicaSnap.exists() ? clinicaSnap.data() : null;
+      setClinica(clinicaData);
+
+      console.log('IdClinica recuperado:', clinicaId);
+
+      if (!clinicaId || typeof clinicaId !== 'string') {
+        console.log('ID da clínica não disponível ainda');
+        return;
+      }
+
+    } catch (error) {
+      console.error('Erro ao carregar dados da clínica:', error);
+    }
+  };
+
+  // Carregar os dados quando a tela for focada ou quando clinicaId mudar
+  useFocusEffect(
+    useCallback(() => {
+      carregarDadosClinica();
+      return () => {};
+    }, [clinicaId])
+  );
+
 
   const handleAceitarConsulta = async () => {
     if (!idCliente) {
@@ -43,18 +111,37 @@ export default function AceiteConsultaScreen() {
         console.log('Aceitando consulta...');
         console.log('Dados da consulta:', consultaId);
 
+        // 1. Procurar a tabela para inserir o aceite do cliente
         const sugestaoRef = collection(db, 't_sugestao_consulta_cliente');
         const qSugestao = query(sugestaoRef, where('status', '==', 'pendente'), where('idCliente', '==', idCliente));
-        const sugestaoSnapshot = await getDocs(qSugestao);
+        const sugestaoSnapshot = await getDocs(qSugestao); 
+
+        if (sugestaoSnapshot.empty) {
+          throw new Error('Nenhuma sugestão encontrada para o cliente.');
+        }
+        
+        // Pegando o primeiro documento da consulta
+        const sugestaoDoc = sugestaoSnapshot.docs[0];
+        const sugestaoData = sugestaoDoc.data();
 
         // Precisa alterar o status da sugestão para "aceita"
         sugestaoSnapshot.forEach(async (docSnap) => {
           const docRef = doc(db, 't_sugestao_consulta_cliente', docSnap.id);
           await updateDoc(docRef, { status: "aceita" });
         });
+
+        // Precisa finalizar o processo da clinicaId
+        const sugestaoRefClinica = collection(db, 't_sugestao_consulta_clinica');
+        const qSugestaoClinica = query(sugestaoRefClinica, where('status', '==', 'aceita'), where('idCliente', '==', idCliente));
+        const sugestaoClinicaSnapshot = await getDocs(qSugestaoClinica);
+
+        sugestaoClinicaSnapshot.forEach(async (docSnap) => {
+            const docRef = doc(db, 't_sugestao_consulta_clinica', docSnap.id);
+            await updateDoc(docRef, { status: "finalizado" });
+          });
       
         // 2. Cria novo registro de consulta na coleção t_consulta
-        await addDoc(collection(db, 't_consultas'), {
+        await addDoc(collection(db, 't_agendamento_consulta'), {
             idSugestaoConsulta: consultaId,
             idCliente: idCliente,
             criadoEm: Timestamp.now(),
@@ -71,16 +158,60 @@ export default function AceiteConsultaScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* Cabeçalho */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backButtonText}>← Voltar</Text>
+        <TouchableOpacity style={styles.backButton} onPress={router.back}>
+            <View style={styles.backButtonCircle}>
+            <Text style={styles.backButtonIcon}>←</Text>
+            </View>
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Aceitar Consulta</Text>
+        <Text style={styles.headerTitle}>Sugestão de Consulta</Text>
       </View>
 
       {/* Conteúdo */}
       <View style={styles.content}>
+
+        {/* Detalhes da clinica */}
+        <Text style={styles.title}>Detalhes da Clínica</Text>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Nome:</Text>
+          <Text style={styles.value}>{clinica?.nome || 'Carregando...'}</Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>CNPJ:</Text>
+          <Text style={styles.value}></Text>
+        </View>
+
+        {/* Detalhes do endereço */}
+        <Text style={styles.title}>Detalhes do Endereço</Text>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>CEP:</Text>
+          <Text style={styles.value}></Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Estado:</Text>
+          <Text style={styles.value}></Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Cidade:</Text>
+          <Text style={styles.value}></Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Bairro:</Text>
+          <Text style={styles.value}></Text>
+        </View>
+
+        <View style={styles.detailRow}>
+          <Text style={styles.label}>Rua:</Text>
+          <Text style={styles.value}></Text>
+        </View>
+
         <Text style={styles.title}>Detalhes da Consulta</Text>
         
         <View style={styles.detailRow}>
@@ -130,25 +261,41 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
   },
   backButton: {
-    marginRight: 10,
+    padding: 5,
   },
-  backButtonText: {
+  backButtonCircle: {
+    backgroundColor: '#007BFF',
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  backButtonIcon: {
+    color: 'white',
     fontSize: 18,
-    color: '#007BFF',
+    fontWeight: 'bold',
   },
   headerTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#007BFF',
+    paddingLeft: 25
   },
   content: {
+    flexDirection: 'column',
+    backgroundColor: '#f0f6ff',
+    borderRadius: 12,
     padding: 16,
+    alignItems: 'flex-start',
+    margin: 20,
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 10,
     textAlign: 'center',
+    color: '#007BFF'
   },
   detailRow: {
     flexDirection: 'row',
@@ -171,6 +318,7 @@ const styles = StyleSheet.create({
     padding: 14,
     borderRadius: 8,
     alignItems: 'center',
+    width: '100%'
   },
   acceptButtonText: {
     color: '#fff',
@@ -178,3 +326,5 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
 });
+
+

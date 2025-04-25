@@ -1,5 +1,5 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   StyleSheet,
   View,
@@ -11,10 +11,11 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { useIdCliente } from '@/hooks/useIdCliente';
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, addDoc } from 'firebase/firestore';
 import firebase, { db } from '../../../firebaseConfig';
+
 
 type ConsultaCardProps = {
   doctor: string;
@@ -65,7 +66,16 @@ export default function MinhasConsultas() {
   const [consulta, setConsulta] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
-
+  // useFocusEffect roda toda vez que a tela recebe foco
+  useFocusEffect(
+    useCallback(() => {
+      if (idCliente) {
+        consultarSugestao();
+      }
+      return () => {};
+    }, [idCliente])
+  );
+  
   // Primeiro consultar as sugestões de consultas
   const consultarSugestao = async () => {
     try {
@@ -125,6 +135,8 @@ export default function MinhasConsultas() {
           turno: consulta.turno
         }
       });
+
+      console.log('Dados da clinica:', consulta.clinicaId)
 
     } catch (error) {
       console.error("Erro ao aceitar agendamento:", error);

@@ -59,7 +59,7 @@ const AppointmentsScreen = () => {
         const sugestaoSnapshot = await getDocs(qSugestao);
 
         if (!sugestaoSnapshot.empty) {
-          // Para este exemplo assumimos que há apenas um agendamento aceito
+          
           const sugestaoDoc = sugestaoSnapshot.docs[0];
           const sugestaoData = sugestaoDoc.data();
           // Desestruture os dados necessários
