@@ -1,10 +1,37 @@
 import { IconSymbol } from '@/components/ui/IconSymbol';
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, TouchableOpacity, TextInput, SafeAreaView } from 'react-native';
+import { StyleSheet, View, Text, TouchableOpacity, TextInput, SafeAreaView, Alert } from 'react-native';
+import firebase from '../../../firebaseConfig';
+import { useIdCliente } from '@/hooks/useIdCliente';
+import { getFirestore, collection, query, where, getDocs, doc, setDoc, getDoc, updateDoc, addDoc, Timestamp } from 'firebase/firestore';
 
 export default function RecusaConsultaScreen() {
   const [motivoRecusa, setMotivoRecusa] = useState('');
+  const { idCliente, loading: loadingId } = useIdCliente();
+  const db = getFirestore();
+
+  const handleEnviarRecusa = async () => {
+    if (!motivoRecusa.trim()) {
+      Alert.alert('Erro', 'Por favor, escreva o motivo da recusa.');
+      return;
+    }
+
+    try {
+      await addDoc(collection(db, 't_motivo_recusa'), {
+        motivo: motivoRecusa.trim(),
+        idCliente: idCliente,
+        criadoEm: Timestamp.now(),
+      });
+
+      Alert.alert('Sucesso', 'Motivo enviado com sucesso!');
+      setMotivoRecusa('');
+      router.back();
+    } catch (error) {
+      console.error('Erro ao enviar motivo de recusa:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao enviar. Tente novamente.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -33,7 +60,7 @@ export default function RecusaConsultaScreen() {
           onChangeText={setMotivoRecusa}
         />
         
-        <TouchableOpacity style={styles.sendButton}>
+        <TouchableOpacity style={styles.sendButton} onPress={handleEnviarRecusa}>
           <Text style={styles.sendButtonText}>ENVIAR</Text>
         </TouchableOpacity>
       </View>
