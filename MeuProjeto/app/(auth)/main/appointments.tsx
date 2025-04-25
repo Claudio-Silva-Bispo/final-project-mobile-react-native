@@ -55,7 +55,7 @@ const AppointmentsScreen = () => {
 
         // 1. Buscar o registro da consulta aceita na t_sugestao_consulta_cliente
         const sugestaoRef = collection(db, 't_sugestao_consulta_cliente');
-        const qSugestao = query(sugestaoRef, where('status', '==', 'aceito'), where('idCliente', '==', idCliente));
+        const qSugestao = query(sugestaoRef, where('status', '==', 'aceita'), where('idCliente', '==', idCliente));
         const sugestaoSnapshot = await getDocs(qSugestao);
 
         if (!sugestaoSnapshot.empty) {

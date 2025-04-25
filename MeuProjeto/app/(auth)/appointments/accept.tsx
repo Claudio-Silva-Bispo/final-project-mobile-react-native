@@ -15,20 +15,7 @@ import firebase from '../../../firebaseConfig';
 export default function AceiteConsultaScreen() {
   const { idCliente } = useIdCliente();
   const db = getFirestore(firebase);
-  const [consulta, setConsulta] = useState<any | null>(null);
   const [clinica, setClinica] = useState<any | null>(null);
-
-  // useFocusEffect roda toda vez que a tela recebe foco
-  /*
-  useFocusEffect(
-    useCallback(() => {
-      if (idCliente) {
-        handleAceitarConsulta();
-      }
-      return () => {};
-    }, [idCliente])
-  );
-  */
 
   // Recupera os dados da consulta passados via rota
   const { 
@@ -38,7 +25,8 @@ export default function AceiteConsultaScreen() {
     turno,       
     dentista,     
     especialidade,
-    clinicaId 
+    clinicaId,
+    clienteId
   } = useLocalSearchParams();
 
   // Função para carregar os dados da clínica
@@ -46,11 +34,12 @@ export default function AceiteConsultaScreen() {
     try {
 
       console.log('Consultando os dados da clinica...');
-      console.log('idCliente para pesquisa dos dados...', idCliente);
+      const id = idCliente === null ? clienteId : idCliente;
+      console.log('idCliente para pesquisa dos dados...', id);
 
       // 1. Procurar a tabela para inserir o aceite do cliente
       const sugestaoRef = collection(db, 't_sugestao_consulta_clinica');
-      const qSugestao = query(sugestaoRef, where('status', '==', 'aceita'), where('idCliente', '==', idCliente));
+      const qSugestao = query(sugestaoRef, where('status', '==', 'pendente'), where('idCliente', '==', id));
       const sugestaoSnapshot = await getDocs(qSugestao); 
 
       if (sugestaoSnapshot.empty) {
@@ -113,7 +102,7 @@ export default function AceiteConsultaScreen() {
 
         // 1. Procurar a tabela para inserir o aceite do cliente
         const sugestaoRef = collection(db, 't_sugestao_consulta_cliente');
-        const qSugestao = query(sugestaoRef, where('status', '==', 'pendente'), where('idCliente', '==', idCliente));
+        const qSugestao = query(sugestaoRef, where('status', '==', 'aceita'), where('idCliente', '==', idCliente));
         const sugestaoSnapshot = await getDocs(qSugestao); 
 
         if (sugestaoSnapshot.empty) {
@@ -172,7 +161,7 @@ export default function AceiteConsultaScreen() {
       <View style={styles.content}>
 
         {/* Detalhes da clinica */}
-        <Text style={styles.title}>Detalhes da Clínica</Text>
+        <Text style={styles.title}>Clínica</Text>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Nome:</Text>
@@ -181,35 +170,35 @@ export default function AceiteConsultaScreen() {
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>CNPJ:</Text>
-          <Text style={styles.value}></Text>
+          <Text style={styles.value}>{clinica?.CNPJ || 'Carregando...'}</Text>
         </View>
 
         {/* Detalhes do endereço */}
-        <Text style={styles.title}>Detalhes do Endereço</Text>
+        <Text style={styles.title}>Endereço</Text>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>CEP:</Text>
-          <Text style={styles.value}></Text>
+          <Text style={styles.value}>{clinica?.CEP || 'Carregando...'}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Estado:</Text>
-          <Text style={styles.value}></Text>
+          <Text style={styles.value}>{clinica?.Estado || 'Carregando...'}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Cidade:</Text>
-          <Text style={styles.value}></Text>
+          <Text style={styles.value}>{clinica?.Cidade || 'Carregando...'}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Bairro:</Text>
-          <Text style={styles.value}></Text>
+          <Text style={styles.value}>{clinica?.Bairro || 'Carregando...'}</Text>
         </View>
 
         <View style={styles.detailRow}>
           <Text style={styles.label}>Rua:</Text>
-          <Text style={styles.value}></Text>
+          <Text style={styles.value}>{clinica?.Rua || 'Carregando...'}</Text>
         </View>
 
         <Text style={styles.title}>Detalhes da Consulta</Text>
@@ -304,13 +293,14 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '600',
-    width: 100,
+    width: 115,
     color: '#333',
   },
   value: {
     fontSize: 16,
     color: '#555',
     flexShrink: 1,
+    paddingLeft: 30
   },
   acceptButton: {
     backgroundColor: '#007BFF',

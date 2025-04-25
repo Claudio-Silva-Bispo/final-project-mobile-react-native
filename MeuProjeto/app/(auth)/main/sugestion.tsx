@@ -128,11 +128,12 @@ export default function MinhasConsultas() {
         pathname: '/(auth)/appointments/accept',
         params: { 
           consultaId: consulta.id,
-          idCliente: idCliente,
+          clienteId: idCliente,
           dentista: consulta.Dentista,
           especialidade: consulta.Especialidade,
           data: consulta.data,
-          turno: consulta.turno
+          turno: consulta.turno,
+          horario: consulta.Horario
         }
       });
 
@@ -151,10 +152,12 @@ export default function MinhasConsultas() {
       if (!consulta) return;
       
       // Atualizar o status para "reagendado"
+      /*
       const agendamentoRef = doc(db, "t_sugestao_consulta_clinica", consulta.id);
       await updateDoc(agendamentoRef, {
         status: "reagendado",
       });
+      */
       
       // Navegar para a tela de reagendamento passando os dados necessários
       router.push({
