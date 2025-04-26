@@ -109,20 +109,20 @@ export default function PreferenciasAtendimentoScreen() {
           if (horarioDoc.exists()) {
             setHorarioAtivo(horarioDoc.data().ativo);
             setFaixaHorario(horarioDoc.data().horarios || {
-              opcaoUm: false,
-              opcaoDois: false,
-              opcaoTres: false,
-              opcaoQuatro: false,
-              opcaoCinco: false,
-              opcaoSeis: false,
-              opcaoSete: false,
-              opcaoOito: false,
-              opcaoNove: false,
-              opcaoDez: false,
-              opcaoOnze: false,
-              opcaoDoze: false,
-              opcaoTreze: false,
-              opcaoQuatorze: false
+              "08:00": false,
+              "09:00": false,
+              "10:00": false,
+              "11:00": false,
+              "12:00": false,
+              "13:00": false,
+              "14:00": false,
+              "15:00": false,
+              "16:00": false,
+              "17:00": false,
+              "18:00": false,
+              "19:00": false,
+              "20:00": false,
+              "21:00": false
             });
           }
         
