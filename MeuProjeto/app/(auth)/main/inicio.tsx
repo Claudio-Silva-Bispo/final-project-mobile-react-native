@@ -1,9 +1,59 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { collection, getDocs, getFirestore, query, where } from 'firebase/firestore';
+import { useIdCliente } from '@/hooks/useIdCliente';
+
+const atividades = [
+  { nome: 'Completar o cadastro pessoal', tabela: 't_usuario', pontos: 20 },
+  { nome: 'Cadastrar endereço de residência', tabela: 't_endereco_residencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar endereço de preferência', tabela: 't_endereco_preferencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar dia de preferência', tabela: 't_dia_preferencia_usuario', pontos: 20 },
+  { nome: 'Cadastrar turno de preferência', tabela: 't_turno_preferencia_usuario', pontos: 20 },
+  { nome: 'Responder um feedback', tabela: 't_feedback', pontos: 50 },
+  { nome: 'Realizar uma consulta sugerida', tabela: 't_consultas', pontos: 300 },
+  { nome: 'Assistir três vídeos preventivos', tabela: 't_videos', pontos: 200 },
+];
 
 const InicioScreen = () => {
+  const [atividadesConcluidas, setAtividadesConcluidas] = useState<string[]>([]);
+    const [pontosTotais, setPontosTotais] = useState(0);
+    const { idCliente, loading: loadingId } = useIdCliente();
+
+  useEffect(() => {
+      const carregarStatus = async () => {
+        if (!idCliente || loadingId) return;
+        
+        const firestore = getFirestore();
+        const concluídas: string[] = [];
+        let pontos = 0;
+  
+        // Verificar cada atividade usando queries para encontrar documentos com o idCliente
+        for (const atividade of atividades) {
+          const colecaoRef = collection(firestore, atividade.tabela);
+          const q = query(colecaoRef, where("idCliente", "==", idCliente));
+          
+          try {
+            const querySnapshot = await getDocs(q);
+            
+            // Se encontrou pelo menos um documento com este idCliente, considera a atividade concluída
+            if (!querySnapshot.empty) {
+              concluídas.push(atividade.nome);
+              pontos += atividade.pontos;
+            }
+          } catch (error) {
+            console.error(`Erro ao verificar atividade ${atividade.nome}:`, error);
+          }
+        }
+  
+        setAtividadesConcluidas(concluídas);
+        setPontosTotais(pontos);
+      };
+  
+      carregarStatus();
+    }, [idCliente, loadingId]);
+  
   return (
     <View style={{ flex: 1, backgroundColor: '#fff' }}>
       <View style={styles.headerImage}>
@@ -28,7 +78,8 @@ const InicioScreen = () => {
           <View style={styles.divider} />
           <View style={styles.pointsContainer}>
             <Text style={styles.points}>Você tem</Text>
-            <Text style={styles.textAppointment}>184</Text>
+            {/*<Text style={styles.textAppointment}>184</Text>*/} 
+            <Text style={styles.textAppointment}>{pontosTotais}</Text>
             <Text style={styles.points}>Pontos</Text>
           </View>
         </View>
