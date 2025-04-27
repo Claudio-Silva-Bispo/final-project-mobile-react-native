@@ -67,7 +67,7 @@ export default function RegisterScreen() {
           <Text style={styles.cardText}>
             Conte com uma rede de cobertura completa, preços que cabem no seu bolso e o melhor: você monta o plano que é ideal para o seu momento.
           </Text>
-          <TouchableOpacity style={styles.planButton}>
+          <TouchableOpacity style={styles.planButton} onPress={() => router.push('/config/productPurchaseScreen')}>
             <Text style={styles.planButtonText}>Simule seu plano</Text>
           </TouchableOpacity>
         </View>
