@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import React from 'react';
 import { StyleSheet, View, Text, TouchableOpacity, SafeAreaView, ScrollView } from 'react-native';
+import { useAuthContext } from '@/components/AuthProvider';
 
 // Componente para item de menu de configurações
 type ConfigMenuItemProps = {
@@ -22,6 +23,7 @@ const ConfigMenuItem: React.FC<ConfigMenuItemProps> = ({ icon, title, onPress })
     </TouchableOpacity>
   );
 };
+
 
 // Ícones simples em SVG-like components
 const UserIcon = () => (
@@ -153,9 +155,9 @@ const LogoutIcon = () => (
 );
 
 
-
-
 export default function ConfigScreen() {
+  const { signOut } = useAuthContext();
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
@@ -278,10 +280,25 @@ export default function ConfigScreen() {
           onPress={() => router.push('/(auth)/config/privacyPolicy')}
         />
         
+        {/*
         <ConfigMenuItem 
           icon={<LogoutIcon />} 
           title="Sair"
           onPress={() => router.push('/')}
+        />
+        */}
+
+        <ConfigMenuItem 
+          icon={<LogoutIcon />} 
+          title="Sair"
+          onPress={async () => {
+            try {
+              await signOut(); 
+              router.replace('/'); 
+            } catch (error) {
+              console.error('Erro ao fazer sign out:', error);
+            }
+          }}
         />
       </ScrollView>
     </SafeAreaView>

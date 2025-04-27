@@ -1,6 +1,8 @@
 import { router } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import AuthProvider from "../../components/AuthProvider";
+import { useAuthContext  } from "../../components/AuthProvider";
 
 const { width } = Dimensions.get('window');
 
@@ -29,8 +31,24 @@ const carouselItems = [
 
 export default function HomeScreen() {
   const [activeIndex, setActiveIndex] = useState(0);
+  const { isSignedIn } = useAuthContext();
 
-  const handleScroll = (event: any) => {
+   // Redirecionar para a tela principal se já estiver autenticado
+   useEffect(() => {
+    if (isSignedIn) {
+      router.replace('/(auth)/main/inicio');
+    }
+  }, [isSignedIn]);
+
+  interface ScrollEvent {
+    nativeEvent: {
+      contentOffset: {
+        x: number;
+      };
+    };
+  }
+
+  const handleScroll = (event: ScrollEvent) => {
     const slide = Math.round(event.nativeEvent.contentOffset.x / width);
     setActiveIndex(slide);
   };

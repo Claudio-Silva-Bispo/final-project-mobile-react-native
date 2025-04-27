@@ -16,6 +16,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../../../firebaseConfig";
 import { collection, documentId, getDocs, query, where } from "firebase/firestore";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useAuthContext } from '@/components/AuthProvider';
 
 const LoginScreen = () => {
   const [saveData, setSaveData] = useState(false);
@@ -27,6 +28,9 @@ const LoginScreen = () => {
    const [idCliente, setIdCliente] = useState(null);
    const [userName, setUserName] = useState<string | null>(null);
 
+   // Contexto de autenticação
+  const { addUser, signIn: contextSignIn, isSignedIn } = useAuthContext();
+  
   const handleLogin = async () => {
     try {
       console.log("🔹 Tentando fazer login...");
@@ -92,7 +96,19 @@ const LoginScreen = () => {
             const nome = usuarioData?.nome;
             console.log("Nome do usuário:", nome);
             setUserName(nome);
+
+            // Adiciona o usuário ao contexto para persistência
+            addUser({
+              name: nome,
+              email: email,
+              password: senha
+            });
+            
+            // Autentica através do contexto
+            contextSignIn(email, senha);
+
           });
+
         } else {
           console.log("Usuário não encontrado na tabela 't_usuario'.");
         }
@@ -119,7 +135,6 @@ const LoginScreen = () => {
     }
   };
   
-
   const handleForgotPassword = () => {
     router.push('/(auth)/login/redefinir-senha');
   };
