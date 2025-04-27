@@ -9,18 +9,24 @@ import {
   Alert,
   TextInput
 } from 'react-native';
-import { getAuth, deleteUser } from 'firebase/auth';
+import { getAuth } from 'firebase/auth';
 import { getFirestore, doc, updateDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { useIdCliente } from '@/hooks/useIdCliente';
 import { router } from 'expo-router';
+import { useAuthContext } from '@/components/AuthProvider';
 
 const DeleteAccountScreen = () => {
   const [isModalVisible, setModalVisible] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [confirmationText, setConfirmationText] = useState("");
   
+  const { idCliente, loading: loadingId } = useIdCliente();
   const auth = getAuth();
   const db = getFirestore();
   const currentUser = auth.currentUser;
+
+  // Para realizar o logout, apagando os dados do sistema de storage
+  const { signOut } = useAuthContext();
 
   const showModal = () => {
     setModalVisible(true);
@@ -31,18 +37,17 @@ const DeleteAccountScreen = () => {
   };
 
   const handleDeleteAccount = async () => {
-    if (!currentUser) {
-      Alert.alert("Erro", "Usuário não está autenticado.");
+    if (loadingId || !idCliente) {
+      Alert.alert("Erro", "Não foi possível obter os dados do usuário. Por favor, tente novamente.");
       return;
     }
 
     setIsLoading(true);
 
     try {
-      // First, find the user document in t_usuario collection
       const userQuery = query(
         collection(db, "t_usuario"),
-        where("email", "==", currentUser.email)
+        where("idCliente", "==", idCliente)
       );
       
       const userQuerySnapshot = await getDocs(userQuery);
@@ -51,39 +56,32 @@ const DeleteAccountScreen = () => {
         throw new Error("Usuário não encontrado na base de dados.");
       }
       
-      // Update the user status to "desativado" in t_usuario
       const userDoc = userQuerySnapshot.docs[0];
       await updateDoc(doc(db, "t_usuario", userDoc.id), {
         status: "desativado",
         dataAtualizacao: new Date().toISOString()
       });
       
-      // Find the user in t_seguranca_usuario collection
       const securityQuery = query(
         collection(db, "t_seguranca_usuario"),
-        where("email", "==", currentUser.email)
+        where("idCliente", "==", idCliente)
       );
       
       const securityQuerySnapshot = await getDocs(securityQuery);
       
       if (!securityQuerySnapshot.empty) {
-        // Update the user status to "desativado" in t_seguranca_usuario
         const securityDoc = securityQuerySnapshot.docs[0];
         await updateDoc(doc(db, "t_seguranca_usuario", securityDoc.id), {
           status: "desativado"
         });
       }
       
-      // Delete the user authentication
-      await deleteUser(currentUser);
-      
-      // Sign out and navigate to login
-      await auth.signOut();
+      await signOut();
       
       Alert.alert(
         "Conta desativada",
         "Sua conta foi desativada com sucesso.",
-        [{ text: "OK", onPress: () => router.navigate("/") }]
+        [{ text: "OK", onPress: () => router.push("/login/login") }]
       );
     } catch (error) {
       console.error("Erro ao desativar conta:", error);
@@ -96,6 +94,16 @@ const DeleteAccountScreen = () => {
       hideModal();
     }
   };
+
+  // Mostrar loading enquanto estamos obtendo o idCliente
+  if (loadingId) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#dc3545" />
+        <Text style={styles.loadingText}>Carregando informações...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -116,7 +124,7 @@ const DeleteAccountScreen = () => {
         
         <View style={styles.bulletPoints}>
           <Text style={styles.bulletPoint}>• Seu histórico e dados de perfil</Text>
-          <Text style={styles.bulletPoint}>• Seus pontos acumulados: {7}</Text>
+          <Text style={styles.bulletPoint}>• Seus pontos acumulados</Text>
           <Text style={styles.bulletPoint}>• Preferências salvas</Text>
         </View>
         
@@ -196,6 +204,15 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8f9fa',
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 16,
+    color: '#6c757d',
   },
   content: {
     flex: 1,
