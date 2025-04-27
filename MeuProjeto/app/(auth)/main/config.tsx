@@ -145,6 +145,15 @@ const VideosIcon = () => (
   </View>
 );
 
+const ExcludeIcon = () => (
+  <View style={styles.iconSvg}>
+    <View style={styles.preferenceIconClipboard} />
+    <View style={styles.preferenceIconLine1} />
+    <View style={styles.preferenceIconLine2} />
+  </View>
+);
+
+
 const LogoutIcon = () => (
   <View style={styles.iconSvg}>
     <View style={styles.logoutIconBox} />
@@ -280,13 +289,13 @@ export default function ConfigScreen() {
           onPress={() => router.push('/(auth)/config/privacyPolicy')}
         />
         
-        {/*
+        
         <ConfigMenuItem 
-          icon={<LogoutIcon />} 
-          title="Sair"
-          onPress={() => router.push('/')}
+          icon={<ExcludeIcon />} 
+          title="Apagar conta"
+          onPress={() => router.push('/config/DeleteAccountScreen')}
         />
-        */}
+        
 
         <ConfigMenuItem 
           icon={<LogoutIcon />} 
