@@ -77,13 +77,6 @@ const SettingsIcon = () => (
   </View>
 );
 
-const PrivacyIcon = () => (
-  <View style={styles.iconSvg}>
-    <View style={styles.privacyIconShield} />
-    <View style={styles.privacyIconCheck} />
-  </View>
-);
-
 const DentalIcon = () => (
   <View style={styles.iconSvg}>
     <View style={styles.dentalIconTooth} />
@@ -109,11 +102,11 @@ const SuggestionIcon = () => (
 const ConsultaIcon = () => (
   <View style={styles.iconSvg}>
     <View style={styles.consultaIconCalendar} />
-    <View style={styles.consultaIconLine1} />
-    <View style={styles.consultaIconLine2} />
+    <View style={styles.consultaIconTopBar} />
+    <View style={styles.consultaIconDot1} />
+    <View style={styles.consultaIconDot2} />
   </View>
 );
-
 const PartnersIcon = () => (
   <View style={styles.iconSvg}>
     <View style={styles.partnersIconBuilding1} />
@@ -137,31 +130,32 @@ const BenefitsIcon = () => (
   </View>
 );
 
-const VideosIcon = () => (
+const PrivacyIcon = () => (
   <View style={styles.iconSvg}>
-    <View style={styles.preferenceIconClipboard} />
-    <View style={styles.preferenceIconLine1} />
-    <View style={styles.preferenceIconLine2} />
+    <View style={styles.privacyIconDocument} />
+    <View style={styles.privacyIconLock} />
+    <View style={styles.privacyIconLockHole} />
   </View>
 );
 
 const ExcludeIcon = () => (
   <View style={styles.iconSvg}>
-    <View style={styles.preferenceIconClipboard} />
-    <View style={styles.preferenceIconLine1} />
-    <View style={styles.preferenceIconLine2} />
+    <View style={styles.excludeIconTop} />
+    <View style={styles.excludeIconBin} />
+    <View style={styles.excludeIconLine1} />
+    <View style={styles.excludeIconLine2} />
+    <View style={styles.excludeIconLine3} />
   </View>
 );
-
 
 const LogoutIcon = () => (
   <View style={styles.iconSvg}>
     <View style={styles.logoutIconBox} />
     <View style={styles.logoutIconArrow} />
   </View>
-
-  
 );
+
+
 
 
 export default function ConfigScreen() {
@@ -201,40 +195,6 @@ export default function ConfigScreen() {
           onPress={() => router.push('/(auth)/config/preference')}
         />
 
-        {/* Uncomment if needed 
-        <ConfigMenuItem 
-          icon={<PreferenceIcon />} 
-          title="Preferência de Atendimento"
-          onPress={() => console.log('Preferência de Atendimento')}
-        />
-        */}
-        
-        <ConfigMenuItem 
-          icon={<FamilyIcon />} 
-          title="Notificações"
-          onPress={() => router.push('/(auth)/config/notification')}
-        />
-        
-        <ConfigMenuItem 
-          icon={<CardIcon />} 
-          title="Carteirinha"
-          onPress={() => router.push('/(auth)/config/healthInsuranceCard')}
-        />
-        
-        <ConfigMenuItem 
-          icon={<LockIcon />} 
-          title="Senha e Acesso"
-          onPress={() => router.push('/(auth)/login/redefinir-senha')}
-        />
-        
-       
-        
-        <ConfigMenuItem 
-          icon={<PaymentIcon />} 
-          title="Formas de Pagamento"
-          onPress={() => router.push('/(auth)/config/formaPagamento')}
-        />
-        
         <ConfigMenuItem 
           icon={<DentalIcon />} 
           title="Rotina de Cuidados"
@@ -260,6 +220,18 @@ export default function ConfigScreen() {
         />
         
         <ConfigMenuItem 
+          icon={<FamilyIcon />} 
+          title="Notificações"
+          onPress={() => router.push('/(auth)/config/notification')}
+        />
+        
+        <ConfigMenuItem 
+          icon={<CardIcon />} 
+          title="Carteirinha"
+          onPress={() => router.push('/(auth)/config/healthInsuranceCard')}
+        />
+        
+        <ConfigMenuItem 
           icon={<DinheiroIcon />} 
           title="Lista de Parceiros"
           onPress={() => router.push('/(auth)/config/doctorDetails')}
@@ -281,6 +253,18 @@ export default function ConfigScreen() {
           icon={<SettingsIcon />} 
           title="Vídeos"
           onPress={() => router.push('/(auth)/config/videoTrailScreen')}
+      />
+
+      <ConfigMenuItem 
+        icon={<LockIcon />} 
+        title="Senha e Acesso"
+        onPress={() => router.push('/(auth)/login/redefinir-senha')}
+      />
+        
+      <ConfigMenuItem 
+        icon={<PaymentIcon />} 
+        title="Formas de Pagamento"
+        onPress={() => router.push('/(auth)/config/formaPagamento')}
       />
 
       <ConfigMenuItem 
@@ -648,33 +632,6 @@ const styles = StyleSheet.create({
     transform: [{ rotate: '-45deg' }],
   },
 
-  // Consulta icon
-  consultaIconCalendar: {
-    width: 18,
-    height: 18,
-    borderRadius: 2,
-    borderWidth: 2,
-    borderColor: '#007BFF',
-    position: 'absolute',
-    top: 3,
-    left: 3,
-  },
-  consultaIconLine1: {
-    width: 10,
-    height: 1,
-    backgroundColor: '#007BFF',
-    position: 'absolute',
-    top: 9,
-    left: 7,
-  },
-  consultaIconLine2: {
-    width: 10,
-    height: 1,
-    backgroundColor: '#007BFF',
-    position: 'absolute',
-    top: 13,
-    left: 7,
-  },
 
   // Partners icon
   partnersIconBuilding1: {
@@ -769,5 +726,121 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 13,
     left: 9,
+  },
+
+  // Consulta icon (melhorado)
+  consultaIconCalendar: {
+    width: 18,
+    height: 16,
+    borderRadius: 2,
+    borderWidth: 2,
+    borderColor: '#007BFF',
+    position: 'absolute',
+    top: 5,
+    left: 3,
+  },
+  consultaIconTopBar: {
+    width: 14,
+    height: 3,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 3,
+    left: 5,
+    borderTopLeftRadius: 1,
+    borderTopRightRadius: 1,
+  },
+  consultaIconDot1: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 10,
+    left: 7,
+  },
+  consultaIconDot2: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 10,
+    left: 13,
+  },
+  
+  // Privacy icon (melhorado)
+  privacyIconDocument: {
+    width: 14,
+    height: 18,
+    borderRadius: 2,
+    borderWidth: 2,
+    borderColor: '#007BFF',
+    position: 'absolute',
+    top: 3,
+    left: 5,
+  },
+  privacyIconLock: {
+    width: 8,
+    height: 6,
+    borderRadius: 1,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 12,
+    left: 8,
+  },
+  privacyIconLockHole: {
+    width: 2,
+    height: 2,
+    borderRadius: 1,
+    backgroundColor: '#FFFFFF',
+    position: 'absolute',
+    top: 14,
+    left: 11,
+  },
+  
+  // Exclude icon (novo ícone de lixeira)
+  excludeIconTop: {
+    width: 12,
+    height: 2,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 3,
+    left: 6,
+  },
+  excludeIconBin: {
+    width: 14,
+    height: 16,
+    borderWidth: 2,
+    borderColor: '#007BFF',
+    borderTopWidth: 0,
+    position: 'absolute',
+    top: 5,
+    left: 5,
+    borderBottomLeftRadius: 2,
+    borderBottomRightRadius: 2,
+  },
+  excludeIconLine1: {
+    width: 2,
+    height: 8,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 9,
+    left: 8,
+  },
+  excludeIconLine2: {
+    width: 2,
+    height: 8,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 9,
+    left: 11,
+  },
+  excludeIconLine3: {
+    width: 2,
+    height: 8,
+    backgroundColor: '#007BFF',
+    position: 'absolute',
+    top: 9,
+    left: 14,
   },
 });

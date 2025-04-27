@@ -116,7 +116,7 @@ const LoginScreen = () => {
         // comparar se o idAutenticacao do Firestore corresponde ao uid do usuário autenticado
         if (user.uid === idAutenticacaoFromDoc) {
           console.log("✅ Login bem-sucedido!");
-          Alert.alert("Sucesso", "Login realizado com sucesso!");
+          //Alert.alert("Sucesso", "Login realizado com sucesso!");
   
           // Navega para a sessão restrita do cliente
           router.push("/(auth)/main/inicio");
